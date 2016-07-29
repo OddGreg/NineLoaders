@@ -1,0 +1,42 @@
+{
+    "app": {
+        "files": "OS::Folders",
+        "views": {
+            "home": "HomeViewController",
+            "contact": "ContactViewController"
+        },
+        "controllers": {
+            "login": "LoginHttpController",
+            "dashboard": "DashboardHttpController"
+        }
+    },
+    "db": {
+        "files": null,
+        "models": {
+            "home": "HomeModel",
+            "contact": "ContactModel"
+        },
+        "composers": {
+            "home": "HomeModelComposer",
+            "contact": "ContactModelComposer"
+        }
+    },
+    "test": {
+        "name": {
+            "first": "James",
+            "initial": "H",
+            "last": "Horner"
+        },
+        "address": {
+            "address": "123 14th Ave E.",
+            "city": "Vancouver",
+            "province": "BC",
+            "country": "Canada",
+            "postal": "A1B 2C3"
+        },
+        "telephone": {
+            "land": "n\/a",
+            "mobile": "789-011-2345"
+        }
+    }
+}

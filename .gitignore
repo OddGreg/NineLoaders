@@ -1,0 +1,12 @@
+# Created by .ignore support plugin (hsz.mobi)
+/build/
+/vendor/
+/composer.lock
+/codeclimate.yml
+
+/docs/
+/report.html
+/psy.php
+/.travis.yml
+/.codeclimate.yml
+/src/Configurators/

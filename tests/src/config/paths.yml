@@ -1,0 +1,11 @@
+app: 'app/'
+config: 'config/'
+console: 'app/console/'
+core: 'src/'
+documents: "tests/app/documents/"
+http: 'app/http/'
+logs: "local/logs/"
+storage: "local/storage/"
+support: 'src/support/'
+tests: 'tests/'
+views: "tests/templates/"
