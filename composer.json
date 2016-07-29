@@ -1,5 +1,5 @@
 {
-    "name"             : "oddgreg/nine-config",
+    "name"             : "oddgreg/nine-loaders",
     "description"      : "Configuration and Loading Classes.",
     "type"             : "library",
     "license"          : "MIT",
