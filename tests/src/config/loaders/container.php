@@ -2,6 +2,7 @@
 
 use Nine\Loaders\Sets\AurynConfigurationSet;
 use Nine\Loaders\Sets\IlluminateConfigurationSet;
+use Nine\Loaders\Sets\SymfonyDIConfigurationSet;
 
 return [
     AurynConfigurationSet::class      => [
@@ -33,6 +34,16 @@ return [
     ],
     IlluminateConfigurationSet::class => [
         'name'        => 'app.container',
+        'config_path' => CONFIG,
+        'priority'    => 'high',
+        'config'      => [
+            //BladeConfigurator::class    => ['name' => 'blade', 'dataset' => 'view.blade',],
+            TwigConfigurator::class     => ['name' => 'twig', 'dataset' => 'view.twig'],
+            MarkdownConfigurator::class => ['name' => 'markdown', 'dataset' => 'view.markdown'],
+        ],
+    ],
+    SymfonyDIConfigurationSet::class => [
+        'name'        => 'app.symfony',
         'config_path' => CONFIG,
         'priority'    => 'high',
         'config'      => [

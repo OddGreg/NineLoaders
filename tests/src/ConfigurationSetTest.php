@@ -10,8 +10,10 @@ use Nine\Loaders\Sets\AurynConfigurationSet;
 use Nine\Loaders\Sets\GenericConfigurationSet;
 use Nine\Loaders\Sets\IlluminateConfigurationSet;
 use Nine\Loaders\Sets\PimpleConfigurationSet;
+use Nine\Loaders\Sets\SymfonyDIConfigurationSet;
 use Nine\Loaders\Support\Priority;
 use Pimple\Container as PimpleContainer;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Test the Collection Class
@@ -32,6 +34,9 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
     /** @var PimpleConfigurationSet */
     protected $PimpleSet;
 
+    /** @var ContainerBuilder $SymfonyDISet */
+    protected $SymfonyDISet;
+
     /** @var ConfigurationSet */
     private $set;
 
@@ -43,6 +48,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         $this->AurynSet = (new AurynConfigurationSet('auryn', $reader))->setContainer(new Injector);
         $this->PimpleSet = (new PimpleConfigurationSet('pimple', $reader))->setContainer(new PimpleContainer);
         $this->IlluminateSet = (new IlluminateConfigurationSet('illuminate', $reader))->setContainer(new Container);
+        $this->SymfonyDISet = (new SymfonyDIConfigurationSet('symfony', $reader))->setContainer(new ContainerBuilder());
         //$this->InteropSet = new InteropConfigurationSet('interop', $reader, new Container);
     }
 
