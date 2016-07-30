@@ -15,7 +15,6 @@ use Nine\Loaders\Exceptions\UnsupportedUseOfArrayAccessMethod;
 use Nine\Loaders\Traits\WithCacheArrayAccess;
 use Nine\Loaders\Traits\WithCacheImport;
 use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * ConfigFileReader caches configuration data indexed by key.
@@ -59,16 +58,6 @@ class ConfigFileReader implements \ArrayAccess, Countable
     public function __construct(string $basePath = '')
     {
         $this->basePath = $basePath;
-    }
-
-    public function offsetSet($key, $value)
-    {
-        throw new UnsupportedUseOfArrayAccessMethod('ConfigFileReader forbids modifying configuration values. Use ConfigFileWriter instead.');
-    }
-
-    public function offsetUnset($key)
-    {
-        throw new UnsupportedUseOfArrayAccessMethod('ConfigFileReader forbids modifying configuration values. Use ConfigFileWriter instead.');
     }
 
     /**
@@ -140,6 +129,16 @@ class ConfigFileReader implements \ArrayAccess, Countable
     public function has(string $compoundKey)
     {
         return $this->offsetExists($compoundKey);
+    }
+
+    public function offsetSet($key, $value)
+    {
+        throw new UnsupportedUseOfArrayAccessMethod('ConfigFileReader forbids modifying configuration values. Use ConfigFileWriter instead.');
+    }
+
+    public function offsetUnset($key)
+    {
+        throw new UnsupportedUseOfArrayAccessMethod('ConfigFileReader forbids modifying configuration values. Use ConfigFileWriter instead.');
     }
 
     /**
@@ -275,6 +274,23 @@ class ConfigFileReader implements \ArrayAccess, Countable
         }
 
         return $this;
+    }
+
+    /**
+     * Reads one or more config keys defined in an array.
+     *
+     * @param array $keys
+     *
+     * @throws \InvalidArgumentException
+     * @throws \Nine\Loaders\Exceptions\ConfigurationFileNotFound
+     * @throws \Nine\Loaders\Exceptions\InvalidConfigurationImportValueException
+     * @throws \Symfony\Component\Yaml\Exception\ParseException
+     */
+    public function readMany(array $keys)
+    {
+        foreach ($keys as $key) {
+            $this->read($key);
+        }
     }
 
 }

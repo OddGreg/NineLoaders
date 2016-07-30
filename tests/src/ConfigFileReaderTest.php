@@ -174,6 +174,9 @@ class ConfigFileReaderTest extends \PHPUnit_Framework_TestCase
         // there should now be only one key in the reader
         static::assertCount(1, $this->reader);
 
+        $this->reader->readMany(['app','view']);
+        static::assertCount(3, $this->reader);
+
         // bad file key
         $this->expectException(ConfigurationFileNotFound::class);
         $this->reader->read('pants');
