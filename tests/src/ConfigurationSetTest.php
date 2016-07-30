@@ -128,7 +128,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         $set = new GenericConfigurationSet('test', new ConfigFileReader(CONFIG));
         $set->insert(new \TestConfigurator('test.configurator'));
 
-        static::assertEquals(100, $set->get('test.configurator')->getPriority());
+        static::assertEquals(0, $set->get('test.configurator')->getPriority());
         $set->get('test.configurator')->setPriority('high');
     }
 

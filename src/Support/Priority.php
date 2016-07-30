@@ -4,9 +4,9 @@ use Nine\Loaders\Exceptions\InvalidPriorityTokenException;
 
 final class Priority
 {
-    const HIGH   = 10;
-    const NORMAL = 100;
-    const LOW    = 1000;
+    const HIGH   = -100;
+    const NORMAL = 0;
+    const LOW    = 100;
 
     const PRIORITIES = [
         'high'   => self::HIGH,

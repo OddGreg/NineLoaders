@@ -15,11 +15,11 @@ class PriorityTest extends \PHPUnit_Framework_TestCase
     {
         static::assertSame(1, Priority::resolve(1.0));
 
-        static::assertSame(10, Priority::resolve('HIGH'));
-        static::assertSame(10, Priority::resolve('high'));
+        static::assertSame(Priority::HIGH, Priority::resolve('HIGH'));
+        static::assertSame(Priority::HIGH, Priority::resolve('high'));
 
-        static::assertSame(100, Priority::resolve('normal'));
-        static::assertSame(1000, Priority::resolve('low'));
+        static::assertSame(Priority::NORMAL, Priority::resolve('normal'));
+        static::assertSame(Priority::LOW, Priority::resolve('low'));
     }
 
     public function test_invalid_priority()
