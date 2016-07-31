@@ -10,6 +10,7 @@ use Nine\Library\Lib;
 use Nine\Loaders\Interfaces\Prioritizable;
 use Nine\Loaders\Support\LoaderReflector;
 use Nine\Loaders\Support\Priority;
+use Nine\Loaders\Support\SymbolTable;
 use Nine\Loaders\Traits\WithPrioritize;
 
 class LoaderSet implements Prioritizable, \ArrayAccess
@@ -18,6 +19,9 @@ class LoaderSet implements Prioritizable, \ArrayAccess
 
     /** @var LoaderReflector */
     protected $reflector;
+
+    /** @var SymbolTable $symbolTable */
+    protected $symbolTable;
 
     /** @var string */
     private $key;
@@ -37,6 +41,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
         $this->key = $name;
         $this->priority = Priority::NORMAL;
         $this->reflector = $reflector;
+        $this->symbolTable = new SymbolTable;
 
         /** @noinspection ExceptionsAnnotatingAndHandlingInspection */
         $this->importConfigurationSets((array)$configurationSets);
@@ -141,6 +146,14 @@ class LoaderSet implements Prioritizable, \ArrayAccess
     }
 
     /**
+     * @param SymbolTable $symbols
+     */
+    public function setBaseSymbolTable(SymbolTable $symbols)
+    {
+        $this->symbolTable = $symbols;
+    }
+
+    /**
      * @param $setKey
      * @param $set
      */
@@ -201,7 +214,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
             $setKey = $set->getKey();
 
             if (array_key_exists($setKey, $this->sets)) {
-                throw new Exceptions\DuplicateConfigurationSetException("The loader encounter a duplicate configuration set. (set: $setKey)");
+                throw new Exceptions\DuplicateConfigurationSetException("The loader encountered a duplicate configuration set. (set: $setKey)");
             }
 
             $this->addConfigurationSet($setKey, $set);
@@ -241,6 +254,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
         /** @var ConfigurationSet $set */
         // each configuration set uses its own instance of ConfigFileReader.
         $set = new $class($key, new ConfigFileReader($path));
+        $set->setBaseSymbolTable($this->symbolTable);
         $set->setPriority(Priority::resolve($priority));
 
         if (method_exists($set, 'setContainer')) {

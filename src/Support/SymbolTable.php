@@ -66,6 +66,23 @@ final class SymbolTable implements \ArrayAccess, ItemQueryInterface
         return compact('type', 'value');
     }
 
+    /**
+     * Merge the new symbols with the current symbols.
+     * NOTE: Any symbols with the same key will be overwritten.
+     *
+     * @param SymbolTable $symbolTable
+     *
+     * @return $this
+     */
+    public function mergeWith(SymbolTable $symbolTable)
+    {
+        foreach ($symbolTable as $key => $symbol) {
+            $this->items[$key] = $symbol;
+        }
+
+        return $this;
+    }
+
     public function offsetGet($key)
     {
         $this->keyExists($key);

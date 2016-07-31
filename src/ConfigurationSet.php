@@ -36,11 +36,35 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
     /** @var ConfigFileReader */
     protected $reader;
 
+    /** @var SymbolTable $symbolTable */
+    protected $symbolTable;
+
+    /**
+     * ConfigurationSet constructor.
+     *
+     * @param string           $key
+     * @param ConfigFileReader $reader
+     */
     public function __construct(string $key, ConfigFileReader $reader)
     {
         $this->reader = $reader;
         $this->key = $key;
         $this->priority = Priority::NORMAL;
+        $this->symbolTable = new SymbolTable;
+    }
+
+    /**
+     * Set the base symbol table with pre-defined symbols.
+     *
+     * This is used to provide a conduit between a ConfigurationSet
+     * and a Configurator. Most often containers and configuration
+     * objects are predefined instances.
+     *
+     * @param SymbolTable $symbols
+     */
+    public function setBaseSymbolTable(SymbolTable $symbols)
+    {
+        $this->symbolTable = $symbols;
     }
 
     /**
@@ -162,13 +186,14 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
             $class = $configurator['configurator'];
 
             if (method_exists($class, 'preload')) {
-
-                $injector = new LoaderReflector(new SymbolTable([
+                $symbols = new SymbolTable([
                     ConfigFileReader::class => ['type' => 'object', 'value' => $this->reader],
                     ConfigurationSet::class => ['type' => 'object', 'value' => $this],
                     'name'                  => ['type' => 'string', 'value' => $key],
                     'dataset'               => ['type' => 'string', 'value' => $class->getDataset()],
-                ]));
+                ]);
+
+                $injector = new LoaderReflector($symbols->mergeWith($this->symbolTable));
 
                 $injector->invokeClassMethod(get_class($class), 'preload');
             }
