@@ -57,6 +57,8 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
      * @param                  $container
      *
      * @throws Exceptions\SymbolTableKeyNotFoundException
+     * @throws Exceptions\InvalidSymbolTableDefinitionException
+     * @throws Exceptions\SymbolTypeDefinitionTypeError
      */
     public function __construct(string $key, ConfigFileReader $reader, $container = NULL)
     {
