@@ -7,9 +7,9 @@
  */
 
 use Nine\Loaders\Configurators\Interfaces\ConfiguratorInterface;
-use Nine\Loaders\Exceptions\PropertyIsInaccessibleException;
 use Nine\Loaders\Interfaces\Prioritizable;
 use Nine\Loaders\Support\Priority;
+use Nine\Loaders\Traits\WithImmutableGetSet;
 use Nine\Loaders\Traits\WithPrioritize;
 
 /**
@@ -18,9 +18,10 @@ use Nine\Loaders\Traits\WithPrioritize;
 class Configurator implements ConfiguratorInterface, Prioritizable
 {
     use WithPrioritize;
+    use WithImmutableGetSet;
 
     /** @var bool */
-    protected $configured = false;
+    protected $configured = FALSE;
 
     /** @var string */
     protected $dataset = '';
@@ -48,32 +49,8 @@ class Configurator implements ConfiguratorInterface, Prioritizable
     }
 
     /**
-     * Limit magic property reading.
+     * Returns the dataset key (into the ConfigFileReader data.)
      *
-     * @param $name
-     *
-     * @return ConfigFileReader
-     * @throws PropertyIsInaccessibleException
-     */
-    public function __get($name)
-    {
-        throw new PropertyIsInaccessibleException("The property '$name' is not accessible.");
-    }
-
-    /**
-     * Disable magic property writing.
-     *
-     * @param $name
-     * @param $value
-     *
-     * @throws PropertyIsInaccessibleException
-     */
-    public function __set($name, $value)
-    {
-        throw new PropertyIsInaccessibleException("There are no writable properties available. (property: $name)");
-    }
-
-    /**
      * @return string
      */
     public function getDataset(): string
@@ -82,6 +59,9 @@ class Configurator implements ConfiguratorInterface, Prioritizable
     }
 
     /**
+     * Optional method for setting the configurator dataset property.
+     * This is almost never necessary.
+     *
      * @param string $dataset
      *
      * @return Configurator
@@ -94,6 +74,8 @@ class Configurator implements ConfiguratorInterface, Prioritizable
     }
 
     /**
+     * Return the key (name) of the current configurator.
+     *
      * @return string
      */
     public function getKey(): string
@@ -102,6 +84,8 @@ class Configurator implements ConfiguratorInterface, Prioritizable
     }
 
     /**
+     * Return the configuration settings for this configurator.
+     *
      * @return array
      */
     public function getSettings(): array
@@ -136,5 +120,4 @@ class Configurator implements ConfiguratorInterface, Prioritizable
 
         return $this;
     }
-
 }
