@@ -71,6 +71,8 @@ class LoaderSet implements Prioritizable, \ArrayAccess
     }
 
     /**
+     * Locate a given configurator in a given configuration set.
+     *
      * @param string      $setKey
      * @param string|NULL $searchKey
      * @param null        $default
@@ -93,6 +95,8 @@ class LoaderSet implements Prioritizable, \ArrayAccess
     }
 
     /**
+     * Import one or more configuration sets.
+     *
      * @param array $configurations
      *
      * @throws Exceptions\DuplicateConfiguratorException
