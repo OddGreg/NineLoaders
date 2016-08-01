@@ -6,33 +6,19 @@
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
 
-use Nine\Loaders\ConfigurationSet;
 use Nine\Loaders\Configurator;
-use Nine\Loaders\Support\LoaderReflector;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class BladeConfigurator extends Configurator
 {
-
     /**
      * Entry Method for configuration.
      *
-     * @return void
+     * @param ContainerBuilder $container
+     * @param array            $config
      */
-    public function configure()
+    public function apply(ContainerBuilder $container, array $config)
     {
-
+        //expose($config);
     }
-
-    /**
-     * @param string           $name
-     * @param ConfigurationSet $set
-     * @param LoaderReflector  $reflector
-     *
-     * @internal param SymbolTable $st
-     */
-    public function preload(string $name, ConfigurationSet $set, LoaderReflector $reflector)
-    {
-        //ddump(func_get_args());
-    }
-
 }

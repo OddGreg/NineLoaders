@@ -16,7 +16,7 @@ class TestConfigurator extends Configurator
      *
      * @internal param array $parameters Optional configuration parameters.
      */
-    public function configure()
+    public function apply()
     {
         // here is where the Configurator acts on any parameters provided.
     }

@@ -6,28 +6,19 @@
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
 
-use Nine\Loaders\ConfigFileReader;
 use Nine\Loaders\Configurator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class TwigConfigurator extends Configurator
 {
     /**
      * Entry Method for configuration.
      *
-     * @return void
+     * @param ContainerBuilder $container
      */
-    public function configure()
+    public function apply(ContainerBuilder $container)
     {
-        // TODO: Implement configure() method.
+        //expose($container);
     }
 
-    /**
-     * @param ConfigFileReader $config
-     *
-     * @return void
-     */
-    //public function load(ConfigFileReader $config)
-    //{
-    //    $this->settings = $config['view.twig'];
-    //}
 }

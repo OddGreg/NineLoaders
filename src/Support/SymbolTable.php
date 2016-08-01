@@ -19,14 +19,38 @@ use Nine\Loaders\Traits\WithItemQuery;
 /**
  * A rudimentary symbol table for use with LoaderReflector
  */
-final class SymbolTable implements \ArrayAccess, ItemQueryInterface
+class SymbolTable implements \ArrayAccess, ItemQueryInterface
 {
     use WithItemArrayAccess;
     use WithItemQuery;
 
+    /**
+     * Instantiate the SymbolTable and optionally import a given
+     * array structure to be compatible with the SymbolTable.
+     *
+     * Correct structure: [
+     *      $key = [
+     *          'type' => '< class_name >|string|array|int|bool',
+     *          'value' => < value >
+     *      ]
+     *      [,...]
+     *
+     * @param array $items
+     *
+     * @throws InvalidSymbolTableDefinitionException
+     * @throws SymbolTypeDefinitionTypeError
+     */
     public function __construct(array $items = [])
     {
         $this->items = $this->checkedSymbolArray($items);
+    }
+
+    /**
+     * @return int
+     */
+    public function count()
+    {
+        return count($this->items);
     }
 
     /**
@@ -56,17 +80,6 @@ final class SymbolTable implements \ArrayAccess, ItemQueryInterface
     }
 
     /**
-     * @param string $type
-     * @param        $value
-     *
-     * @return array
-     */
-    public function makeSymbol(string $type, $value)
-    {
-        return compact('type', 'value');
-    }
-
-    /**
      * Merge the new symbols with the current symbols.
      * NOTE: Any symbols with the same key will be overwritten.
      *
@@ -76,13 +89,17 @@ final class SymbolTable implements \ArrayAccess, ItemQueryInterface
      */
     public function mergeWith(SymbolTable $symbolTable)
     {
-        foreach ($symbolTable as $key => $symbol) {
-            $this->items[$key] = $symbol;
-        }
+        $this->items = array_merge($this->items, $symbolTable->toArray());
 
         return $this;
     }
 
+    /**
+     * @param mixed $key
+     *
+     * @return array
+     * @throws \Nine\Loaders\Exceptions\KeyDoesNotExistException
+     */
     public function offsetGet($key)
     {
         $this->keyExists($key);
@@ -100,6 +117,7 @@ final class SymbolTable implements \ArrayAccess, ItemQueryInterface
      * @throws KeyDoesNotExistException
      * @throws SymbolTypeDefinitionTypeError
      * @throws \Nine\Loaders\Exceptions\SymbolTableKeyNotFoundException
+     * @throws \Nine\Loaders\Exceptions\SymbolTypeMismatchError
      */
     public function offsetSet($key, $symbol)
     {
@@ -135,6 +153,7 @@ final class SymbolTable implements \ArrayAccess, ItemQueryInterface
      * @param $value
      *
      * @throws KeyDoesNotExistException
+     * @throws \Nine\Loaders\Exceptions\SymbolTypeMismatchError
      */
     public function setSymbolValue($key, $value)
     {
@@ -142,6 +161,25 @@ final class SymbolTable implements \ArrayAccess, ItemQueryInterface
         $this->keyTypeMatches($key, gettype($value));
 
         $this->items[$key]['value'] = $value;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->items;
+    }
+
+    /**
+     * @param string $type
+     * @param        $value
+     *
+     * @return array
+     */
+    public static function makeSymbol(string $type, $value)
+    {
+        return compact('type', 'value');
     }
 
     /**
@@ -173,9 +211,16 @@ final class SymbolTable implements \ArrayAccess, ItemQueryInterface
             throw new KeyDoesNotExistException("Symbol '$key' does not exist.");
         }
 
-        return true;
+        return TRUE;
     }
 
+    /**
+     * @param string $key
+     * @param string $type
+     *
+     * @throws SymbolTypeMismatchError
+     * @throws \Nine\Loaders\Exceptions\KeyDoesNotExistException
+     */
     protected function keyTypeMatches(string $key, string $type)
     {
         $expected = $this->getSymbolType($key);

@@ -6,8 +6,6 @@
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
 
-use Nine\Loaders\Sets\AurynConfigurationSet;
-
 return [
     'name'      => [
         'first'   => 'James',
@@ -56,7 +54,7 @@ return [
 
     ],
     'sets'      => [
-        AurynConfigurationSet::class => [
+        'views' => [
             // the identifier given to this configuration set.
             'name'        => 'app.di',
             // the path to the folder that contains configuration files
@@ -72,7 +70,7 @@ return [
                     BladeConfigurator::class => [
                         // the data set loaded by the ConfigFileReader class
                         // defaults to [] if not supplied.
-                        'dataset' => 'view.blade',
+                        'dataset'  => 'view.blade',
                         // the set priority. Defaults to 'normal' if not supplied.
                         'priority' => 'normal',
                         // any settings to add or to override settings from the data set.

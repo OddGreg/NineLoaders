@@ -12,26 +12,42 @@ use Nine\Loaders\Exceptions\KeyDoesNotExistException;
 use ReflectionClass;
 use ReflectionParameter;
 
-final class LoaderReflector
+final class LoaderReflector extends SymbolTable
 {
-    /** @var SymbolTable */
-    protected $symbols;
-
-    public function __construct(SymbolTable $symbols = null)
+    /**
+     * Instantiate the reflector and import any symbols passed
+     * in a SymbolTable.
+     *
+     * @param SymbolTable|NULL $symbols
+     */
+    public function __construct(SymbolTable $symbols = NULL)
     {
-        $this->symbols = $symbols ?: new SymbolTable();
-        $this->lib = new Lib;
+        parent::__construct($symbols ? $symbols->toArray() : []);
     }
 
     /**
+     * The main value in this is for debugging and testing.
+     *
+     * @return SymbolTable
+     */
+    public function copySymbolTable(): SymbolTable
+    {
+        return new SymbolTable($this->items);
+    }
+
+    /**
+     * Using reflection, extract and return an array containing
+     * the reflection and argument list for a class or callable.
+     *
      * @param      $class
      * @param null $method
      *
      * @return array
+     *
      * @throws KeyDoesNotExistException
      * @throws CannotDetermineDependencyTypeException
      */
-    public function extractDependencies($class, $method = null)
+    public function extractDependencies($class, $method = NULL)
     {
         # create a reflection based on the format of `$class` and `$method`.
         $reflection = $this->getReflection($class, $method);
@@ -45,16 +61,19 @@ final class LoaderReflector
     }
 
     /**
+     * Determine and return the type of reflection necessary to examine
+     * a class or callable.
+     *
      * @param      $class
      * @param null $method
      *
      * @return null|\ReflectionFunction|\ReflectionMethod
      */
-    public function getReflection($class, $method = null)
+    public function getReflection($class, $method = NULL)
     {
-        $reflection = null;
+        $reflection = NULL;
 
-        if (null !== $method) {
+        if (NULL !== $method) {
             // if no method supplied and $class is an array then assume:
             //      `[class ,method]`
             //
@@ -81,7 +100,6 @@ final class LoaderReflector
             $reflection = new \ReflectionMethod($class, $method);
 
         } catch (\ReflectionException $e) {
-
             // probably no constructor, so just instantiate the class.
 
             /** @var ReflectionClass $reflection */
@@ -92,22 +110,17 @@ final class LoaderReflector
     }
 
     /**
-     * @return SymbolTable
-     */
-    public function getSymbols(): SymbolTable
-    {
-        return $this->symbols;
-    }
-
-    /**
-     * @param      $class
-     * @param null $method
+     * Invoke a class::method with extracted dependencies through reflection.
      *
-     * @return mixed
+     * @param string $class
+     * @param null   $method
+     *
+     * @return mixed Return whatever the invoked class method returns.
+     *
      * @throws KeyDoesNotExistException
      * @throws CannotDetermineDependencyTypeException
      */
-    public function invokeClassMethod($class, $method = null)
+    public function invokeClassMethod(string $class, $method = NULL)
     {
         // is the class described by `class@method`?
         if (is_string($class) and Lib::str_has(':', $class)) {
@@ -123,6 +136,10 @@ final class LoaderReflector
     }
 
     /**
+     * This internal method determines and returns the argument list
+     * required by `Reflection::invokeArgs()` and is normally only
+     * called by the `extractDependencies()` method.
+     *
      * @param $class
      * @param $method
      * @param $arguments
@@ -141,16 +158,16 @@ final class LoaderReflector
         foreach ($arguments as $key => $arg) {
             # determine and retrieve the class of the argument, if it exists.
             /** @var ReflectionParameter $arg */
-            $dependency_class = ($arg->getClass() === null) ? null : $arg->getClass()->name;
+            $dependency_class = ($arg->getClass() === NULL) ? NULL : $arg->getClass()->name;
 
-            if ($this->symbols->has($dependency_class)) {
-                $arg_list[] = $this->symbols->get($dependency_class)['value'];
+            if ($this->has($dependency_class)) {
+                $arg_list[] = $this->get($dependency_class)['value'];
 
                 continue;
             }
 
             # use the default value if it exists
-            if ($arg->isDefaultValueAvailable() && ! $this->symbols->has($arg->name)) {
+            if ($arg->isDefaultValueAvailable() && ! $this->has($arg->name)) {
                 $arg_list[] = $arg->getDefaultValue();
 
                 continue;
@@ -171,8 +188,8 @@ final class LoaderReflector
                 $type = (string)$arg->getType();
                 $name = $arg->name;
 
-                if ($this->symbols->has($name) and $type === $this->symbols->getSymbolType($name)) {
-                    $arg_list[] = $this->symbols->getSymbolValue($name);
+                if ($this->has($name) and $type === $this->getSymbolType($name)) {
+                    $arg_list[] = $this->getSymbolValue($name);
                 }
 
                 continue;
@@ -186,18 +203,21 @@ final class LoaderReflector
     }
 
     /**
-     * @param $reflection
+     * Instantiate a class based on its reflection, name, method and arguments.
      *
+     * This is normally only called by `invokeClassMethod()`.
+     *
+     * @param $reflection
      * @param $class
      * @param $method
      * @param $arguments
-     * @param $execute
      *
      * @return mixed
-     * @throws \Nine\Loaders\Exceptions\KeyDoesNotExistException
-     * @throws \Nine\Loaders\Exceptions\CannotDetermineDependencyTypeException
+     *
+     * @throws KeyDoesNotExistException
+     * @throws CannotDetermineDependencyTypeException
      */
-    private function instantiateClass($reflection, $class, $method, $arguments)
+    private function instantiateClass($reflection, string $class, string $method, array $arguments)
     {
         // construct a new class object.
         // this will trigger an early return
@@ -228,5 +248,4 @@ final class LoaderReflector
         /** @var \ReflectionMethod $reflection */
         return $reflection->invokeArgs($constructor, $arguments);
     }
-
 }

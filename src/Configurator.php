@@ -6,8 +6,8 @@
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
 
+use Nine\Loaders\Configurators\Interfaces\ConfiguratorInterface;
 use Nine\Loaders\Exceptions\PropertyIsInaccessibleException;
-use Nine\Loaders\Interfaces\ConfiguratorInterface;
 use Nine\Loaders\Interfaces\Prioritizable;
 use Nine\Loaders\Support\Priority;
 use Nine\Loaders\Traits\WithPrioritize;
@@ -74,18 +74,6 @@ class Configurator implements ConfiguratorInterface, Prioritizable
     }
 
     /**
-     * Descendant Configurators may override this method to handle
-     * any configuration steps required after the `load` method is
-     * called.
-     *
-     * Commonly, this method will be overridden.
-     */
-    public function configure()
-    {
-        $this->configured = true;
-    }
-
-    /**
      * @return string
      */
     public function getDataset(): string
@@ -129,6 +117,8 @@ class Configurator implements ConfiguratorInterface, Prioritizable
      * ie: key 'view.blade' indicates the view.php config file, index 'blade'.
      *
      * @param ConfigFileReader $config
+     *
+     * @return mixed|void
      */
     public function load(ConfigFileReader $config)
     {

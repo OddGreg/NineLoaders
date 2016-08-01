@@ -6,11 +6,6 @@ use Nine\Loaders\Exceptions\ConfiguratorNotFoundException;
 use Nine\Loaders\Exceptions\DuplicateConfiguratorException;
 use Nine\Loaders\Exceptions\KeyDoesNotExistException;
 use Nine\Loaders\Exceptions\UnsupportedUseOfArrayAccessMethod;
-use Nine\Loaders\Sets\AurynConfigurationSet;
-use Nine\Loaders\Sets\GenericConfigurationSet;
-use Nine\Loaders\Sets\IlluminateConfigurationSet;
-use Nine\Loaders\Sets\PimpleConfigurationSet;
-use Nine\Loaders\Sets\SymfonyDIConfigurationSet;
 use Nine\Loaders\Support\Priority;
 use Pimple\Container as PimpleContainer;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -23,18 +18,18 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
 {
-    /** @var AurynConfigurationSet */
+    /** @var ConfigurationSet */
     protected $AurynSet;
 
-    /** @var IlluminateConfigurationSet */
+    /** @var ConfigurationSet */
     protected $IlluminateSet;
 
     protected $InteropSet;
 
-    /** @var PimpleConfigurationSet */
+    /** @var ConfigurationSet */
     protected $PimpleSet;
 
-    /** @var ContainerBuilder $SymfonyDISet */
+    /** @var ConfigurationSet */
     protected $SymfonyDISet;
 
     /** @var ConfigurationSet */
@@ -44,18 +39,17 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
     {
         $reader = new ConfigFileReader(CONFIG);
 
-        $this->set = new GenericConfigurationSet('generic', $reader);
-        $this->AurynSet = (new AurynConfigurationSet('auryn', $reader))->setContainer(new Injector);
-        $this->PimpleSet = (new PimpleConfigurationSet('pimple', $reader))->setContainer(new PimpleContainer);
-        $this->IlluminateSet = (new IlluminateConfigurationSet('illuminate', $reader))->setContainer(new Container);
-        $this->SymfonyDISet = (new SymfonyDIConfigurationSet('symfony', $reader))->setContainer(new ContainerBuilder());
-        //$this->InteropSet = new InteropConfigurationSet('interop', $reader, new Container);
+        $this->set = new ConfigurationSet('generic', $reader);
+        $this->AurynSet = new ConfigurationSet('auryn', $reader, new Injector);
+        $this->PimpleSet = new ConfigurationSet('pimple', $reader, new PimpleContainer);
+        $this->IlluminateSet = new ConfigurationSet('illuminate', $reader, new Container);
+        $this->SymfonyDISet = new ConfigurationSet('symfony', $reader, new ContainerBuilder());
     }
 
     public function test_configurator_set_priority()
     {
         $this->set->insert(new \BladeConfigurator('views.blade.configurator',
-            'view.blade', Priority::NORMAL, ['enabled' => false]));
+            'view.blade', Priority::NORMAL, ['enabled' => FALSE]));
 
         $this->set->insert(new \MarkdownConfigurator('views.markdown.configurator',
             'view.markdown', Priority::LOW));
@@ -101,7 +95,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
 
     public function test_loading()
     {
-        $set = new GenericConfigurationSet('test', new ConfigFileReader(CONFIG));
+        $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG), NULL);
         $set->load([
             new \TestConfigurator('test.configurator'),
             new \MarkdownConfigurator('views.markdown.configurator'),
@@ -113,7 +107,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         static::assertInstanceOf(\TestConfigurator::class, $set['test.configurator']);
 
         // failure test
-        $set = new GenericConfigurationSet('test', new ConfigFileReader(CONFIG));
+        $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG), NULL);
 
         $this->expectException(KeyDoesNotExistException::class);
         $set->load([
@@ -125,7 +119,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
 
     public function test_priority()
     {
-        $set = new GenericConfigurationSet('test', new ConfigFileReader(CONFIG));
+        $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG));
         $set->insert(new \TestConfigurator('test.configurator'));
 
         static::assertEquals(0, $set->get('test.configurator')->getPriority());
@@ -134,7 +128,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
 
     public function test_set()
     {
-        $set = new GenericConfigurationSet('test', new ConfigFileReader(CONFIG));
+        $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG));
         $set->insert(new \TestConfigurator('test.configurator'));
         unset($set['test.configurator']);
         static::assertFalse($set->has('test.configurator'));

@@ -16,7 +16,7 @@ class MarkdownConfigurator extends Configurator
      *
      * @return void
      */
-    public function configure()
+    public function apply()
     {
         // TODO: Implement configure() method.
     }

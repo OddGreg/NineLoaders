@@ -5,8 +5,9 @@
  * @version 0.5.0
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
-use Nine\Loaders\Sets\AurynConfigurationSet;
 use Nine\Loaders\Support\LoaderReflector;
+use Nine\Loaders\Support\SymbolTable;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Test the Collection Class
@@ -22,22 +23,31 @@ class LoaderSetTest extends \PHPUnit_Framework_TestCase
     /** @var ConfigFileReader */
     protected $reader;
 
+    /** @var SymbolTable $symbols */
+    protected $symbols;
+
     public function setUp()
     {
+        $di = new ContainerBuilder();
+        $this->symbols = new SymbolTable([
+            'container'             => SymbolTable::makeSymbol(ContainerBuilder::class, $di),
+            ContainerBuilder::class => SymbolTable::makeSymbol(ContainerBuilder::class, $di),
+        ]);
+
         $this->reader = new ConfigFileReader(CONFIG . 'loaders/');
-        $this->loader = new LoaderSet(new LoaderReflector, 'test.loader');
+        $this->loader = new LoaderSet('test.loader', new LoaderReflector($this->symbols), $di);
+        $this->loader->setBaseSymbolTable($this->symbols);
+        $this->loader->import($this->reader['container']);
     }
 
     public function test_configuration()
     {
         $reader = new ConfigFileReader(CONFIG . 'loaders/');
+
         $reader->readConfig('container.php');
-        static::assertArrayHasKey('name', $reader->read('container.' . AurynConfigurationSet::class));
+        static::assertArrayHasKey('name', $reader->read('container.views'));
 
-        $loader = new LoaderSet(new LoaderReflector, 'testing', $reader['container']);
-        $loader->loadAll()->configure();
-
-        //expose($loader->find('app.di')['set']['blade']);
+        $this->loader->loadAll()->configure();
     }
 
     public function test_instance()

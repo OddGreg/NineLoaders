@@ -11,11 +11,15 @@ use Nine\Loaders\Interfaces\Prioritizable;
 use Nine\Loaders\Support\LoaderReflector;
 use Nine\Loaders\Support\Priority;
 use Nine\Loaders\Support\SymbolTable;
+use Nine\Loaders\Traits\WithLoaderSetArray;
 use Nine\Loaders\Traits\WithPrioritize;
 
 class LoaderSet implements Prioritizable, \ArrayAccess
 {
-    Use WithPrioritize;
+    use WithPrioritize;
+    use WithLoaderSetArray;
+
+    protected $container;
 
     /** @var LoaderReflector */
     protected $reflector;
@@ -32,16 +36,18 @@ class LoaderSet implements Prioritizable, \ArrayAccess
     /**
      * LoaderSet constructor.
      *
-     * @param LoaderReflector $reflector
      * @param string          $name              The identifier given to this loader set.
+     * @param LoaderReflector $reflector
+     * @param null            $container
      * @param array           $configurationSets An array of instantiated configuration sets.
      */
-    public function __construct(LoaderReflector $reflector, string $name, array $configurationSets = [])
+    public function __construct(string $name, LoaderReflector $reflector, $container = NULL, array $configurationSets = [])
     {
         $this->key = $name;
         $this->priority = Priority::NORMAL;
         $this->reflector = $reflector;
         $this->symbolTable = new SymbolTable;
+        $this->container = $container;
 
         /** @noinspection ExceptionsAnnotatingAndHandlingInspection */
         $this->importConfigurationSets((array)$configurationSets);
@@ -56,7 +62,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
             if ( ! $this->sets[$key]['configured']) {
                 /** @var ConfigurationSet $set */
                 $set['set']->configure();
-                $this->sets[$key]['configured'] = true;
+                $this->sets[$key]['configured'] = TRUE;
             }
         }
     }
@@ -68,10 +74,8 @@ class LoaderSet implements Prioritizable, \ArrayAccess
      *
      * @return mixed|null
      */
-    public function find(string $setKey, string $searchKey = null, $default = null)
+    public function find(string $setKey, string $searchKey = NULL, $default = NULL)
     {
-        //ddump([compact('setKey','searchKey'), $this->sets, $this->offsetExists($setKey), $this->offsetGet($setKey)]);
-
         if ($this->offsetExists($setKey)) {
             $set = $this->offsetGet($setKey);
 
@@ -83,7 +87,6 @@ class LoaderSet implements Prioritizable, \ArrayAccess
         }
 
         return $default;
-
     }
 
     /**
@@ -113,36 +116,17 @@ class LoaderSet implements Prioritizable, \ArrayAccess
     public function loadAll()
     {
         foreach ($this->sets as $key => $config) {
+
             if ( ! $this->sets[$key]['loaded']) {
-                $config['set']->{'load'}();
-                $this->sets[$key]['loaded'] = true;
+
+                /** @noinspection PhpUndefinedMethodInspection */
+                $config['set']->load();
+
+                $this->sets[$key]['loaded'] = TRUE;
             }
         }
 
         return $this;
-    }
-
-    public function offsetExists($key)
-    {
-        return array_key_exists($key, $this->sets);
-    }
-
-    public function offsetGet($key)
-    {
-
-        return $this->sets[$key];
-    }
-
-    public function offsetSet($key, $value)
-    {
-        throw new Exceptions\UnsupportedUseOfArrayAccessMethod(
-            "To import set(s) to the loader, use 'import()'");
-    }
-
-    public function offsetUnset($key)
-    {
-        throw new Exceptions\UnsupportedUseOfArrayAccessMethod(
-            'Sets cannot be removed once imported.');
     }
 
     /**
@@ -159,7 +143,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
      */
     protected function addConfigurationSet($setKey, $set)
     {
-        $configured = $loaded = false;
+        $configured = $loaded = FALSE;
         $this->sets[$setKey] = compact('set', 'configured', 'loaded');
 
         $this->sortConfigurationSetsByPriority();
@@ -219,12 +203,10 @@ class LoaderSet implements Prioritizable, \ArrayAccess
 
             $this->addConfigurationSet($setKey, $set);
 
-            $configurators = $config['config'];
-
             // collect the list of Configurators.
-            foreach ($configurators as $configurator => $configuration) {
+            foreach ($config['config'] as $configurator => $settings) {
                 // add it to the ConfigurationSet.
-                $set->insert($this->makeConfigurator($configurator, $configuration));
+                $set->insert($this->makeConfigurator($configurator, $settings));
             }
         }
     }
@@ -234,6 +216,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
      * @param array  $config
      *
      * @return ConfigurationSet
+     * @throws \Nine\Loaders\Exceptions\SymbolTableKeyNotFoundException
      *
      * @throws Exceptions\KeyDoesNotExistException
      * @throws Exceptions\CannotDetermineDependencyTypeException
@@ -253,14 +236,14 @@ class LoaderSet implements Prioritizable, \ArrayAccess
 
         /** @var ConfigurationSet $set */
         // each configuration set uses its own instance of ConfigFileReader.
-        $set = new $class($key, new ConfigFileReader($path));
-        $set->setBaseSymbolTable($this->symbolTable);
-        $set->setPriority(Priority::resolve($priority));
 
-        if (method_exists($set, 'setContainer')) {
-            $dependencies = (object)$this->reflector->extractDependencies($class, 'setContainer');
-            $dependencies->reflection->invokeArgs($set, $dependencies->arg_list);
+        if ( ! class_exists($class)) {
+            $class = ConfigurationSet::class;
         }
+
+        $set = new $class($key, new ConfigFileReader($path), $this->container);
+        $set->setPriority(Priority::resolve($priority));
+        $set->setBaseSymbolTable($this->symbolTable);
 
         return $set;
     }
@@ -280,26 +263,12 @@ class LoaderSet implements Prioritizable, \ArrayAccess
      */
     protected function makeConfigurator(string $configurator, array $configuration) : Configurator
     {
-        // Configurator parameters.
         $name = $configuration['name'];
         $dataset = $configuration['dataset'] ?? '';
         $priority = Priority::resolve($configuration['priority'] ?? Priority::NORMAL);
         $config = $configuration['config'] ?? [];
 
         return new $configurator($name, $dataset, $priority, $config);
-
-        // the Configurator constructor signature is:
-        //   string $name, string $dataset = '', int $priority = Priority::NORMAL, array $config = []
-        // so assign values to those parameters in the symbol table.
-        //$this->reflector->getSymbols()->setSymbolTable([
-        //    'name'     => ['type' => 'string', 'value' => $name],
-        //    'dataset'  => ['type' => 'string', 'value' => $dataset],
-        //    'priority' => ['type' => 'int', 'value' => $priority],
-        //    'config'   => ['type' => 'array', 'value' => $config],
-        //]);
-        //
-        //// construct the configurator
-        //return $this->reflector->invokeClassMethod("$configurator:__construct");
     }
 
     /**

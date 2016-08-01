@@ -1,5 +1,7 @@
 <?php namespace Nine\Loaders\Interfaces;
 
+use Nine\Loaders\Configurators\Interfaces\ConfiguratorInterface;
+
 /**
  * @package Nine Loaders
  * @version 0.5.0
