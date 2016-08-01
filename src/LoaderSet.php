@@ -40,6 +40,9 @@ class LoaderSet implements Prioritizable, \ArrayAccess
      * @param LoaderReflector $reflector
      * @param null            $container
      * @param array           $configurationSets An array of instantiated configuration sets.
+     *
+     * @throws Exceptions\InvalidSymbolTableDefinitionException
+     * @throws Exceptions\SymbolTypeDefinitionTypeError
      */
     public function __construct(string $name, LoaderReflector $reflector, $container = NULL, array $configurationSets = [])
     {
