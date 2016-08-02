@@ -193,6 +193,32 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
     }
 
     /**
+     * Create a configurator from a class name and an array of arguments
+     *
+     * @param string $class
+     * @param array  $arg_list
+     *
+     * @return Configurator
+     *
+     * @throws Exceptions\InvalidPriorityTokenException
+     * @throws DuplicateConfiguratorException
+     */
+    public function insertWithCreate(string $class, array $arg_list) : Configurator
+    {
+        $name = $arg_list['name'];
+        $dataset = $arg_list['dataset'] ?? '';
+        $priority = $arg_list['priority'] ?? 'normal';
+        $config = $arg_list['config'] ?? [];
+
+        $priority = Priority::resolve($priority);
+        $set = new $class($name, $dataset, $priority, $config);
+
+        $this->insert($set);
+
+        return $set;
+    }
+
+    /**
      * @param array $configurators
      *
      * @return $this

@@ -7,6 +7,7 @@
  */
 
 use Nine\Library\Lib;
+use Nine\Loader\Sets\SetCanRegister;
 use Nine\Loaders\Interfaces\Prioritizable;
 use Nine\Loaders\Support\LoaderReflector;
 use Nine\Loaders\Support\Priority;
@@ -160,7 +161,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
      * The definition for a ConfigurationSet in the input array is as follows:
      *
      * [
-     *      AurynConfigurationSet::class => [
+     *      '<set name without dots>' => [
      *          // the identifier given to this configuration set.
      *          'name' => 'app.di',
      *          // the path to the folder that contains configuration files
@@ -201,6 +202,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
     protected function importConfigurationSets(array $configurationSets)
     {
         foreach ($configurationSets as $class => $config) {
+
             $set = $this->makeConfigurationSet($class, $config);
             $setKey = $set->getKey();
 
@@ -210,10 +212,15 @@ class LoaderSet implements Prioritizable, \ArrayAccess
 
             $this->addConfigurationSet($setKey, $set);
 
-            // collect the list of Configurators.
-            foreach ($config['config'] as $configurator => $settings) {
-                // add it to the ConfigurationSet.
-                $set->insert($this->makeConfigurator($configurator, $settings));
+            // custom ConfigurationSets do not require (or normal need) a
+            // 'config' section, so only process one if it exists.
+            if (isset($config['config']))
+            {
+                // collect the list of Configurators.
+                foreach ($config['config'] as $configurator => $settings) {
+                    // add it to the ConfigurationSet.
+                    $set->insert($this->makeConfigurator($configurator, $settings));
+                }
             }
         }
     }
@@ -251,6 +258,10 @@ class LoaderSet implements Prioritizable, \ArrayAccess
         $set = new $class($key, new ConfigFileReader($path), $this->container);
         $set->setPriority(Priority::resolve($priority));
         $set->setBaseSymbolTable($this->symbolTable);
+
+        if ($set instanceof SetCanRegister) {
+            $set->register();
+        }
 
         return $set;
     }
