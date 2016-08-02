@@ -1,11 +1,55 @@
 # Container-Agnostic Configuration Classes
 
-This repository is a collection of classes that manage configurations. The classes are divided into four type:
+This repository is a collection of classes that manage configurations. Internally, the loader and configuration sets do not use nor require a dependency injector or service locator. A container may be passed into the LoaderSet, which passes it through the ConfigurationSet and on to the individual Configurators. The Configurator then populates the container as required.
+
+The main repository classes are:
 
 1. `LoaderSet` -- A set of Configuration Sets.
 1. `ConfigurationSet` -- A set of Configurators.
 1. `Configurator` -- A configurator.
 1. `ConfigFileReader` and `ConfigFileWriter` -- Configuration File Reading and Writing.
+
+## Quick Overview
+
+The diagram below reveals the class hierarchy of the core classes.  
+
+![Relationship Diagram](http://horsedragon.ca/share/Relationship_Diagram.png)
+
+1. A `LoaderSet` is a collection of `ConfigurationSet` objects. Each LoaderSet may pass a single container reference to a `ConfigurationSet`. Each loader set manages and initiates loading and applying configuration sets. 
+
+> Subclass the LoaderSet class if you need a specific identifier (ie: `AurynLoaderSet`) or need to further initialize the environment. 
+
+2. A `ConfigurationSet` is a collection of `Configurator` objects. Each collection set manages inserting, loading and applying `Configurator` objects. 
+
+> The `ConfigurationSet` class handles the insertion, selection, loading and applying of the `Configurators` it contains.
+
+3. A `Configurator` class handles the configuration of a single scope. i.e.: a `TwigConfigurator` may handle the configuration required for __Twig__ while `DatabaseConfigurator` or `MiddlewareConfigurator` and so on would handle their respective configuration scopes.
+
+4. `ConfigFileReader` and `ConfigFileWriter` handle the reading and writing of configuration files. Files may be in `.php`, `.yml` or `.json` format. XML is not supported out of the box.
+
+> In some cases you may only require the `ConfigFileReader` for managing access to file-based configuration values.  
+ 
+#### Example Configuration Settings file.
+ 
+```php
+return [
+    ExampleConfigurationSet::class => [
+        'name'        => 'example.config',
+        'config_path' => __DIR__ . '/../config/examples/',
+        'priority'    => 'high',
+    ],
+    'views'                        => [
+        'name'        => 'example.views',
+        'config_path' => __DIR__ . '/../config/',
+        'priority'    => 'low',
+        'config'      => [
+            BladeConfigurator::class    => ['name' => 'blade', 'dataset' => 'view.blade',],
+            TwigConfigurator::class     => ['name' => 'twig', 'dataset' => 'view.twig'],
+            MarkdownConfigurator::class => ['name' => 'markdown', 'dataset' => 'view.markdown'],
+        ],
+    ],
+];
+```
 
 ## Configuration File Handling
 
