@@ -33,11 +33,17 @@ The diagram below reveals the class hierarchy of the core classes.
  
 ```php
 return [
+    // example use of a subclassed configuration set
+    // which handles its own configurators etc. or
+    // it may do something entirely different.
     ExampleConfigurationSet::class => [
         'name'        => 'example.config',
         'config_path' => __DIR__ . '/../config/examples/',
         'priority'    => 'high',
     ],
+    // example of a labeled ConfigurationSet
+    // note that the label isn't significant. The name
+    // parameter defines the name given to the set.
     'views'                        => [
         'name'        => 'example.views',
         'config_path' => __DIR__ . '/../config/',
