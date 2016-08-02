@@ -15,17 +15,17 @@ The diagram below reveals the class hierarchy of the core classes.
 
 ![Relationship Diagram](http://horsedragon.ca/share/Relationship_Diagram_main.png)
 
-1. A `LoaderSet` is a collection of `ConfigurationSet` objects. Each LoaderSet may pass a single container reference to a `ConfigurationSet`. Each loader set manages and initiates loading and applying configuration sets. 
+* A `LoaderSet` is a collection of `ConfigurationSet` objects. Each LoaderSet may pass a single container reference to a `ConfigurationSet`. Each loader set manages and initiates loading and applying configuration sets. 
 
 > Subclass the LoaderSet class if you need a specific identifier (ie: `AurynLoaderSet`) or need to further initialize the environment. 
 
-2. A `ConfigurationSet` is a collection of `Configurator` objects. Each collection set manages inserting, loading and applying `Configurator` objects. 
+* A `ConfigurationSet` is a collection of `Configurator` objects. Each collection set manages inserting, loading and applying `Configurator` objects. 
 
 > The `ConfigurationSet` class handles the insertion, selection, loading and applying of the `Configurators` it contains.
 
-3. A `Configurator` class handles the configuration of a single scope. i.e.: a `TwigConfigurator` may handle the configuration required for __Twig__ while `DatabaseConfigurator` or `MiddlewareConfigurator` and so on would handle their respective configuration scopes.
+* A `Configurator` class handles the configuration of a single scope. i.e.: a `TwigConfigurator` may handle the configuration required for __Twig__ while `DatabaseConfigurator` or `MiddlewareConfigurator` and so on would handle their respective configuration scopes.
 
-4. `ConfigFileReader` and `ConfigFileWriter` handle the reading and writing of configuration files. Files may be in `.php`, `.yml` or `.json` format. XML is not supported out of the box.
+* `ConfigFileReader` and `ConfigFileWriter` handle the reading and writing of configuration files. Files may be in `.php`, `.yml` or `.json` format. XML is not supported out of the box.
 
 > In some cases you may only require the `ConfigFileReader` for managing access to file-based configuration values.  
  
