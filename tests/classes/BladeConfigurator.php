@@ -19,6 +19,6 @@ class BladeConfigurator extends Configurator
      */
     public function apply(ContainerBuilder $container, array $config)
     {
-        //expose($config);
+        //
     }
 }
