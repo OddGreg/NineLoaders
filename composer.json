@@ -1,6 +1,6 @@
 {
     "name"             : "oddgreg/nine-loaders",
-    "description"      : "Configuration and Loading Classes.",
+    "description"      : "Container-Agnostic Configuration Loaders and Sets.",
     "type"             : "library",
     "license"          : "MIT",
     "authors"          : [
