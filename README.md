@@ -13,7 +13,7 @@ The main repository classes are:
 
 The diagram below reveals the class hierarchy of the core classes.  
 
-![Relationship Diagram](http://horsedragon.ca/share/Relationship_Diagram_Top.png)
+![Relationship Diagram](http://horsedragon.ca/share/Relationship_Diagram_3.png)
 
 * A `LoaderSet` is a collection of `ConfigurationSet` objects. Each LoaderSet may pass a single container reference to a `ConfigurationSet`. Each loader set manages and initiates loading and applying configuration sets. 
 
