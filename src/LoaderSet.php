@@ -20,6 +20,15 @@ class LoaderSet implements Prioritizable, \ArrayAccess
     use WithPrioritize;
     use WithLoaderSetArray;
 
+    /**
+     * LoaderSets and ConfigurationSets do not use or require
+     * an external dependency injection or service locating
+     * container. This reference is passed down from LoaderSet
+     * to ConfigurationSet and then ultimately to the
+     * configurators - which generally load the container.
+     *
+     * @var null|object
+     */
     protected $container;
 
     /** @var LoaderReflector */

@@ -1,9 +1,11 @@
-# Nine Configurations
+# Container-Agnostic Configuration Classes
 
-This repository is a collection of classes that manage configurations. The classes are divided into two sections:
+This repository is a collection of classes that manage configurations. The classes are divided into four type:
 
-1. Configuration File Handling
-2. Configuration Sets
+1. `LoaderSet` -- A set of Configuration Sets.
+1. `ConfigurationSet` -- A set of Configurators.
+1. `Configurator` -- A configurator.
+1. `ConfigFileReader` and `ConfigFileWriter` -- Configuration File Reading and Writing.
 
 ## Configuration File Handling
 
