@@ -113,7 +113,7 @@ final class LoaderReflector extends SymbolTable
      * Invoke a class::method with extracted dependencies through reflection.
      *
      * @param string $class
-     * @param null   $method
+     * @param string $method
      *
      * @return mixed Return whatever the invoked class method returns.
      *
@@ -230,8 +230,12 @@ final class LoaderReflector extends SymbolTable
             return $reflection->newInstanceArgs($arguments);
         }
 
+        if ( ! isset($reflection->class)) {
+            throw new \BadMethodCallException("Class $class must implement the apply() method.");
+        }
+
         // optionally, transfer control over to the class:method.
-        /** @var \ReflectionClass $rf */
+        /** @var \ReflectionMethod $reflection */
         $rf = new \ReflectionClass($reflection->class);
 
         $constructor = $class;

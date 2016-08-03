@@ -7,6 +7,7 @@
  */
 
 use Countable;
+use InvalidArgumentException;
 use Nine\Library\Lib;
 use Nine\Loaders\Exceptions\ConfigurationFileNotFound;
 use Nine\Loaders\Exceptions\InvalidConfigurationImportValueException;
@@ -164,11 +165,11 @@ class ConfigFileReader implements \ArrayAccess, Countable
      * @return $this
      *
      * @throws InvalidConfigurationPathException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @throws ParseException
      * @throws InvalidConfigurationImportValueException
      */
-    public function preloadPath(string $directoryPath = null, string $mask = '*.php')
+    public function preloadPath(string $directoryPath = NULL, string $mask = '*.php')
     {
         // if NULL is passed then assume the basePath.
         $directoryPath = $directoryPath ?: $this->basePath;
@@ -208,7 +209,7 @@ class ConfigFileReader implements \ArrayAccess, Countable
      *
      * @throws InvalidConfigurationImportValueException
      * @throws ParseException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @throws ConfigurationFileNotFound
      */
     public function read(string $key)
@@ -250,9 +251,10 @@ class ConfigFileReader implements \ArrayAccess, Countable
      *
      * @param string $filePathOrKey
      *
-     * @return $this
      *
-     * @throws \InvalidArgumentException
+     * @return $this|array|bool
+     *
+     * @throws InvalidArgumentException
      * @throws InvalidConfigurationImportValueException
      * @throws ParseException
      * @throws InvalidConfigurationPathException
@@ -261,19 +263,25 @@ class ConfigFileReader implements \ArrayAccess, Countable
     {
         $key = pathinfo($filePathOrKey, PATHINFO_FILENAME);
 
-        if ( ! $this->cached($key)) {
-            $ext = pathinfo($filePathOrKey, PATHINFO_EXTENSION);
-            $ext = strlen($ext) > 0 ? ".$ext" : '.php';
-            $filename = $key . $ext;
-
-            if (false === ($path = Lib::file_in_path($filename, [pathinfo($filePathOrKey, PATHINFO_DIRNAME), $this->basePath]))) {
-                throw new InvalidConfigurationPathException("Could not locate the provided file path. (path: $path)");
-            }
-
-            $this->importByExtension($ext, $path, $key);
+        if ($this->cached($key)) {
+            return $this->cache[$key];
         }
 
-        return $this;
+        $ext = pathinfo($filePathOrKey, PATHINFO_EXTENSION);
+        $ext = strlen($ext) > 0 ? ".$ext" : '.php';
+        $filename = $key . $ext;
+
+        $path = $this->basePath . $filePathOrKey;
+
+        if (!file_exists($path)) {
+            if (FALSE === ($path = Lib::file_in_path($filename, [pathinfo($filePathOrKey, PATHINFO_DIRNAME), $this->basePath]))) {
+                throw new InvalidConfigurationPathException("Could not locate the provided file path. (path: $path)");
+            }
+        }
+
+        $this->importByExtension($ext, $path, $key);
+
+        return $this->cache[$key];
     }
 
     /**
@@ -281,16 +289,23 @@ class ConfigFileReader implements \ArrayAccess, Countable
      *
      * @param array $keys
      *
-     * @throws \InvalidArgumentException
+     * @return array
+     *
+     * @throws InvalidArgumentException
      * @throws \Nine\Loaders\Exceptions\ConfigurationFileNotFound
      * @throws \Nine\Loaders\Exceptions\InvalidConfigurationImportValueException
      * @throws \Symfony\Component\Yaml\Exception\ParseException
      */
     public function readMany(array $keys)
     {
+        $collection = [];
+
         foreach ($keys as $key) {
             $this->read($key);
+            $collection[$key] = $this->cache[$key];
         }
+
+        return $collection;
     }
 
 }

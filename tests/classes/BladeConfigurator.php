@@ -17,7 +17,7 @@ class BladeConfigurator extends Configurator
      * @param ContainerBuilder $container
      * @param array            $config
      */
-    public function apply(ContainerBuilder $container, array $config)
+    public function apply(ContainerBuilder $container)
     {
         //
     }

@@ -1,4 +1,5 @@
 <?php
+
 use Nine\Loaders\ConfigFileReader;
 use Nine\Loaders\Configurator;
 
