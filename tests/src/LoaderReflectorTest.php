@@ -46,6 +46,8 @@ class LoaderReflectorTest extends \PHPUnit_Framework_TestCase
     public function testDependencyInjection()
     {
         static::assertEquals('Harry Henderson', $this->reflector->invokeObjectMethod($this, 'get_name_function'));
+        static::assertEquals('Harry Henderson', $this->reflector->invokeClassMethod(InvokeTestClass::class, 'getTestFunction'));
+        static::assertEquals('Harry Henderson', $this->reflector->invokeClassMethod(InvokeTestClass::class . ':getTestFunction'));
     }
 
     public function testInstances()
@@ -96,6 +98,16 @@ class LoaderReflectorTest extends \PHPUnit_Framework_TestCase
         static::assertInstanceOf(\ReflectionMethod::class, $this->reflector->getReflection([$this, 'get_test_function']));
     }
 
+    public function testSymbolMerge()
+    {
+        $this->reflector->mergeWith(new SymbolTable([
+            'success' => SymbolTable::makeSymbol('boolean', TRUE),
+        ]));
+
+        /** @noinspection PhpParamsInspection */
+        static::assertTrue($this->reflector['success']);
+    }
+
     public function testSymbolTypeMismatchError()
     {
         // allocate a string variable called 'test'
@@ -108,6 +120,15 @@ class LoaderReflectorTest extends \PHPUnit_Framework_TestCase
         // attempting to assign an double to a string.
         $this->expectException(SymbolTypeMismatchError::class);
         $this->reflector['test'] = 23.6;
+    }
+
+}
+
+class InvokeTestClass
+{
+    public function getTestFunction(string $name)
+    {
+        return $name;
     }
 
 }

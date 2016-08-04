@@ -253,10 +253,9 @@ final class LoaderReflector extends SymbolTable
         }
 
         if ( ! isset($reflection->class)) {
-            throw new \BadMethodCallException("Class $class must implement the apply() method.");
+            throw new CannotDetermineDependencyTypeException($reflection->name . '::' . $method . ' cannot be instantiated.');
         }
 
-        // optionally, transfer control over to the class:method.
         /** @var \ReflectionMethod $reflection */
         $rf = new \ReflectionClass($reflection->class);
 
@@ -264,11 +263,17 @@ final class LoaderReflector extends SymbolTable
 
         // determine if a constructor exists and has required parameters
         if (is_string($class) && $rf->getConstructor()) {
+
             // extract its dependencies
             $dependencies = $this->extractDependencies($class, '__construct');
+
             // instantiate the object through its constructor
             $constructor = $rf->newInstanceArgs($dependencies['arg_list']);
+
         }
+
+        // if not already, instantiate the object
+        $constructor = ! is_string($constructor) ? $constructor : new $constructor;
 
         // invoke the method
         /** @var \ReflectionMethod $reflection */

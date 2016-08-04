@@ -106,14 +106,22 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         static::assertTrue($set->has('test.configurator'));
         static::assertInstanceOf(\TestConfigurator::class, $set['test.configurator']);
 
+        // verify settings
+        $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG), NULL);
+        $set->load([
+            // TwigConfigurator depends on the correct dataset parameter, so this should fail.
+            new \TwigConfigurator('twig', 'view.twig'),
+        ]);
+        static::assertArrayHasKey('defaults',$set['twig']->getSettings());
+
         // failure test
         $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG), NULL);
-
         $this->expectException(KeyDoesNotExistException::class);
         $set->load([
             // TwigConfigurator depends on the correct dataset parameter, so this should fail.
-            new \TwigConfigurator('views.twig.configurator'),
+            new \TwigConfigurator('twig', 'views.twig.configurator'),
         ]);
+
 
     }
 
