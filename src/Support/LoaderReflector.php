@@ -73,7 +73,7 @@ final class LoaderReflector extends SymbolTable
     {
         $reflection = NULL;
 
-        if (NULL !== $method) {
+        if (NULL === $method) {
             // if no method supplied and $class is an array then assume:
             //      `[class ,method]`
             //
@@ -82,17 +82,23 @@ final class LoaderReflector extends SymbolTable
                 return new \ReflectionFunction($class);
             }
 
-            if (is_array($class)) {
-                // extract the class and method
-                list($controller, $method) = $class;
+            if (is_string($class) && Lib::str_has(':', $class)) {
+                list($class, $method) = explode(':', $class);
 
-                return new \ReflectionMethod($controller, $method);
+                return new \ReflectionMethod($class, $method);
             }
 
             # if a callable is supplied then treat it as a function
-            if (is_callable($class)) {
+            if ( ! is_array($class) && is_callable($class)) {
                 return new \ReflectionFunction($class);
             }
+        }
+
+        if (is_array($class)) {
+            // extract the class and method
+            list($controller, $method) = $class;
+
+            return new \ReflectionMethod($controller, $method);
         }
 
         try {
@@ -136,19 +142,35 @@ final class LoaderReflector extends SymbolTable
     }
 
     /**
+     * Like invokeClassMethod but operates on an already instantiated object.
+     *
+     * @param      $object
+     * @param null $method
+     *
+     * @return mixed
+     */
+    public function invokeObjectMethod($object, $method = NULL)
+    {
+        /** @var \ReflectionMethod $reflectionMethod */
+        list($reflectionMethod, $arg_list) = array_values($this->extractDependencies($object, $method));
+
+        return $reflectionMethod->invokeArgs($object, $arg_list);
+    }
+
+    /**
      * This internal method determines and returns the argument list
      * required by `Reflection::invokeArgs()` and is normally only
      * called by the `extractDependencies()` method.
      *
-     * @param $class
-     * @param $method
-     * @param $arguments
+     *
+     * @param       $class
+     * @param       $method
+     * @param array $arguments
      *
      * @return array
-     * @throws KeyDoesNotExistException
      * @throws CannotDetermineDependencyTypeException
      */
-    protected function gatherParameters($class, $method, $arguments)
+    protected function gatherParameters($class, $method, array $arguments)
     {
         # build an argument list to pass to the closure/method
         # this will contain instantiated dependencies.

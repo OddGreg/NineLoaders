@@ -46,6 +46,14 @@ class SymbolTable implements \ArrayAccess, ItemQueryInterface
     }
 
     /**
+     *  Clear the symbol table.
+     */
+    public function clear()
+    {
+        $this->items = NULL;
+    }
+
+    /**
      * @return int
      */
     public function count()
@@ -122,6 +130,27 @@ class SymbolTable implements \ArrayAccess, ItemQueryInterface
     public function offsetSet($key, $symbol)
     {
         $this->setSymbolValue($key, $symbol);
+    }
+
+    /**
+     * Returns the value of a symbol.
+     *
+     * If the symbol is a callable then return the result of the callable.
+     *
+     * > Note that calling getSymbolValue() on a callable symbol returns the
+     * function definition.
+     *
+     * @param $key
+     *
+     * @return mixed
+     */
+    public function resolveSymbolValue($key)
+    {
+        $this->keyExists($key);
+
+        return $this->items[$key]['type'] === \Closure::class
+            ? $this->items[$key]['value']()
+            : $this->items[$key]['value'];
     }
 
     /**
