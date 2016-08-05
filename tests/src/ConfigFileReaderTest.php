@@ -27,6 +27,65 @@ class ConfigFileReaderTest extends \PHPUnit_Framework_TestCase
         $this->reader->clearCache();
     }
 
+    public function testPreload()
+    {
+        $this->reader->preloadPath();
+
+        // count the php files in the basePath folder.
+        // each filename becomes a key in the cache.
+        $keys = count(glob($this->reader->getBasePath() . '*.php'));
+
+        static::assertCount($keys, $this->reader);
+        static::assertArrayHasKey('app', $this->reader);
+        static::assertArrayHasKey('view', $this->reader);
+
+        static::assertTrue($this->reader->has('view.blade'));
+
+        $this->reader->clearCache();
+        $this->expectException(InvalidConfigurationPathException::class);
+        $this->reader->preloadPath('bad-path');
+    }
+
+    public function testRead()
+    {
+        // load the auth config file
+        $this->reader->read('auth');
+
+        // there should now be only one key in the reader
+        static::assertCount(1, $this->reader);
+
+        $this->reader->readMany(['app', 'view']);
+        static::assertCount(3, $this->reader);
+
+        // bad file key
+        $this->expectException(ConfigurationFileNotFound::class);
+        $this->reader->read('pants');
+    }
+
+    public function testReadConfig()
+    {
+        // verify that the key is not currently cached.
+        static::assertFalse($this->reader->cached('auth'));
+
+        // this should succeed
+        $this->reader->readConfig('auth');
+        // ... and should now be cached.
+        static::assertTrue($this->reader->cached('auth'));
+
+        // this will too but should hit the cache for the test
+        $this->reader->readConfig('auth');
+
+        $this->expectException(InvalidConfigurationPathException::class);
+        $this->reader->readConfig('bad-file');
+    }
+
+    public function testUnSet()
+    {
+        $this->reader->read('auth');
+        $this->expectException(UnsupportedUseOfArrayAccessMethod::class);
+        $this->reader->offsetUnset('auth');
+    }
+
     public function test_bad_assignment()
     {
         // using the writer to mutate the config should work
@@ -70,7 +129,7 @@ class ConfigFileReaderTest extends \PHPUnit_Framework_TestCase
         // modify the configuration (both methods are equivalent.)
         ## $writer->view_markdown_defaults_debug = false;
         static::assertTrue($writer['view.markdown.defaults.debug']);
-        $writer['view.markdown.defaults.debug'] = false;
+        $writer['view.markdown.defaults.debug'] = FALSE;
         static::assertFalse($writer['view.markdown.defaults.debug']);
         static::assertFalse($writer['view']['markdown']['defaults']['debug']);
 
@@ -97,7 +156,7 @@ class ConfigFileReaderTest extends \PHPUnit_Framework_TestCase
     {
         $writer = new ConfigFileWriter($this->reader->preloadPath());
 
-        $writer['unhinged'] = ['unhinged' => true];
+        $writer['unhinged'] = ['unhinged' => TRUE];
         unset($writer['unhinged']);
         static::assertFalse($this->reader->cached('unhinged'));
     }
@@ -145,58 +204,6 @@ class ConfigFileReaderTest extends \PHPUnit_Framework_TestCase
         $this->reader->preloadPath();
         // and the count should remain the same.
         static::assertCount(9, $this->reader->getCache());
-    }
-
-    public function test_preload()
-    {
-        $this->reader->preloadPath();
-
-        // count the php files in the basePath folder.
-        // each filename becomes a key in the cache.
-        $keys = count(glob($this->reader->getBasePath() . '*.php'));
-
-        static::assertCount($keys, $this->reader);
-        static::assertArrayHasKey('app', $this->reader);
-        static::assertArrayHasKey('view', $this->reader);
-
-        static::assertTrue($this->reader->has('view.blade'));
-
-        $this->reader->clearCache();
-        $this->expectException(InvalidConfigurationPathException::class);
-        $this->reader->preloadPath('bad-path');
-    }
-
-    public function test_read()
-    {
-        // load the auth config file
-        $this->reader->read('auth');
-
-        // there should now be only one key in the reader
-        static::assertCount(1, $this->reader);
-
-        $this->reader->readMany(['app','view']);
-        static::assertCount(3, $this->reader);
-
-        // bad file key
-        $this->expectException(ConfigurationFileNotFound::class);
-        $this->reader->read('pants');
-    }
-
-    public function test_readConfig()
-    {
-        // verify that the key is not currently cached.
-        static::assertFalse($this->reader->cached('auth'));
-
-        // this should succeed
-        $this->reader->readConfig('auth');
-        // ... and should now be cached.
-        static::assertTrue($this->reader->cached('auth'));
-
-        // this will too but should hit the cache for the test
-        $this->reader->readConfig('auth');
-
-        $this->expectException(InvalidConfigurationPathException::class);
-        $this->reader->readConfig('bad-file');
     }
 
 }

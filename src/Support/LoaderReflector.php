@@ -9,6 +9,7 @@
 use Nine\Library\Lib;
 use Nine\Loaders\Exceptions\CannotDetermineDependencyTypeException;
 use Nine\Loaders\Exceptions\KeyDoesNotExistException;
+use Nine\Loaders\Exceptions\MethodDoesNotExistException;
 use ReflectionClass;
 use ReflectionParameter;
 
@@ -53,8 +54,8 @@ final class LoaderReflector extends SymbolTable
         $reflection = $this->getReflection($class, $method);
 
         # locate the method arguments
-        $arguments = ! $reflection instanceof ReflectionClass ? $arguments = $reflection->getParameters() : [];
-        $arg_list = $this->gatherParameters($class, $method, $arguments);
+        $arguments = ! $reflection instanceof ReflectionClass ? $reflection->getParameters() : [];
+        $arg_list = $this->gatherParameters($arguments);
 
         # return an array containing the reflection and the list of qualified argument instances
         return compact('reflection', 'arg_list');
@@ -71,48 +72,11 @@ final class LoaderReflector extends SymbolTable
      */
     public function getReflection($class, $method = NULL)
     {
-        $reflection = NULL;
-
-        if (NULL === $method) {
-            // if no method supplied and $class is an array then assume:
-            //      `[class ,method]`
-            //
-            # if a callable is supplied then treat it as a function
-            if ($class instanceof \Closure) {
-                return new \ReflectionFunction($class);
-            }
-
-            if (is_string($class) && Lib::str_has(':', $class)) {
-                list($class, $method) = explode(':', $class);
-
-                return new \ReflectionMethod($class, $method);
-            }
-
-            # if a callable is supplied then treat it as a function
-            if ( ! is_array($class) && is_callable($class)) {
-                return new \ReflectionFunction($class);
-            }
-        }
-
         if (is_array($class)) {
-            // extract the class and method
-            list($controller, $method) = $class;
-
-            return new \ReflectionMethod($controller, $method);
+            list($class, $method) = $class;
         }
 
-        try {
-            // try through a constructor
-            $reflection = new \ReflectionMethod($class, $method);
-
-        } catch (\ReflectionException $e) {
-            // probably no constructor, so just instantiate the class.
-
-            /** @var ReflectionClass $reflection */
-            $reflection = new \ReflectionClass($class);
-        }
-
-        return $reflection;
+        return $this->makeClassReflection($class, $method);
     }
 
     /**
@@ -162,15 +126,13 @@ final class LoaderReflector extends SymbolTable
      * required by `Reflection::invokeArgs()` and is normally only
      * called by the `extractDependencies()` method.
      *
-     *
-     * @param       $class
-     * @param       $method
      * @param array $arguments
      *
      * @return array
+     *
      * @throws CannotDetermineDependencyTypeException
      */
-    protected function gatherParameters($class, $method, array $arguments)
+    protected function gatherParameters(array $arguments)
     {
         # build an argument list to pass to the closure/method
         # this will contain instantiated dependencies.
@@ -178,10 +140,13 @@ final class LoaderReflector extends SymbolTable
         $arg_list = [];
 
         foreach ($arguments as $key => $arg) {
+
             # determine and retrieve the class of the argument, if it exists.
+
             /** @var ReflectionParameter $arg */
             $dependency_class = ($arg->getClass() === NULL) ? NULL : $arg->getClass()->name;
 
+            # use the stored value form the SymbolTable
             if ($this->has($dependency_class)) {
                 $arg_list[] = $this->get($dependency_class)['value'];
 
@@ -195,33 +160,56 @@ final class LoaderReflector extends SymbolTable
                 continue;
             }
 
-            # how about a valid class name?
+            # handle newly-encountered, existing class
             if (class_exists($dependency_class)) {
                 # a class exists as an argument but was not found in the Forge,
                 # so instantiate the class with dependencies
-                $arg_list[] = $this->invokeClassMethod($dependency_class, '__construct'); # new $dependency_class;
+                $arg_list[] = $concrete = $this->invokeClassMethod($dependency_class, '__construct'); # new $dependency_class;
 
-                // next
+                # store the new class object in the SymbolTable
+                $this->setSymbol($dependency_class, $dependency_class, $concrete);
+
                 continue;
             }
 
+            # handle cases where a type is supplied for the variable.
             if ($arg->hasType()) {
 
-                $type = (string)$arg->getType();
                 $name = $arg->name;
 
-                if ($this->has($name) and $type === $this->getSymbolType($name)) {
+                if ($this->has($name) && (string)$arg->getType() === $this->getSymbolType($name)) {
                     $arg_list[] = $this->getSymbolValue($name);
                 }
 
                 continue;
             }
-
-            throw new CannotDetermineDependencyTypeException(
-                "Unable to determine the type of parameter '{$arg->name}' in '$class::$method'");
         }
 
         return $arg_list;
+    }
+
+    /**
+     * @param $class
+     * @param $method
+     *
+     * @return null|\ReflectionFunction|\ReflectionMethod
+     */
+    protected function makeClassReflection($class, $method)
+    {
+        # if a callable is supplied then treat it as a function
+        if ($class instanceof \Closure) {
+            return new \ReflectionFunction($class);
+        }
+
+        if (is_string($class) && Lib::str_has(':', $class)) {
+            list($class, $method) = explode(':', $class);
+        }
+
+        $reflectionClass = new \ReflectionClass($class);
+
+        return $reflectionClass->hasMethod($method)
+            ? new \ReflectionMethod($class, $method)
+            : $reflectionClass;
     }
 
     /**
@@ -229,15 +217,13 @@ final class LoaderReflector extends SymbolTable
      *
      * This is normally only called by `invokeClassMethod()`.
      *
-     * @param $reflection
-     * @param $class
-     * @param $method
-     * @param $arguments
+     * @param        $reflection
+     * @param string $class
+     * @param string $method
+     * @param array  $arguments
      *
      * @return mixed
-     *
-     * @throws KeyDoesNotExistException
-     * @throws CannotDetermineDependencyTypeException
+     * @throws MethodDoesNotExistException
      */
     private function instantiateClass($reflection, string $class, string $method, array $arguments)
     {
@@ -252,14 +238,16 @@ final class LoaderReflector extends SymbolTable
             return $reflection->newInstanceArgs($arguments);
         }
 
-        if ( ! isset($reflection->class)) {
-            throw new CannotDetermineDependencyTypeException($reflection->name . '::' . $method . ' cannot be instantiated.');
+        ///** @var \ReflectionMethod $reflection */
+        $rf = new \ReflectionClass($class);
+
+        if ( ! $rf->hasMethod($method)) {
+            throw new MethodDoesNotExistException($reflection->name . '::' . $method . '() does not exist.');
         }
 
-        /** @var \ReflectionMethod $reflection */
-        $rf = new \ReflectionClass($reflection->class);
-
-        $constructor = $class;
+        // if the class has no constructor then use this to
+        // instantiate it in the usual, non-dependency injecting way.
+        $subjectClass = $class;
 
         // determine if a constructor exists and has required parameters
         if (is_string($class) && $rf->getConstructor()) {
@@ -268,15 +256,13 @@ final class LoaderReflector extends SymbolTable
             $dependencies = $this->extractDependencies($class, '__construct');
 
             // instantiate the object through its constructor
-            $constructor = $rf->newInstanceArgs($dependencies['arg_list']);
+            $subjectClass = $rf->newInstanceArgs($dependencies['arg_list']);
 
         }
 
-        // if not already, instantiate the object
-        $constructor = ! is_string($constructor) ? $constructor : new $constructor;
-
-        // invoke the method
         /** @var \ReflectionMethod $reflection */
-        return $reflection->invokeArgs($constructor, $arguments);
+        return $reflection->invokeArgs(
+            is_string($subjectClass) ? new $subjectClass : $subjectClass,
+            $arguments);
     }
 }

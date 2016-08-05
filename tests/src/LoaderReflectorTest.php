@@ -5,6 +5,7 @@
  * @version 0.5.0
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
+use Nine\Loaders\Exceptions\MethodDoesNotExistException;
 use Nine\Loaders\Exceptions\SymbolTypeMismatchError;
 
 /**
@@ -98,7 +99,7 @@ class LoaderReflectorTest extends \PHPUnit_Framework_TestCase
         static::assertInstanceOf(\ReflectionMethod::class, $this->reflector->getReflection([$this, 'get_test_function']));
     }
 
-    public function testSymbolMerge()
+    public function testSymbolMergeAndCopy()
     {
         $this->reflector->mergeWith(new SymbolTable([
             'success' => SymbolTable::makeSymbol('boolean', TRUE),
@@ -106,6 +107,10 @@ class LoaderReflectorTest extends \PHPUnit_Framework_TestCase
 
         /** @noinspection PhpParamsInspection */
         static::assertTrue($this->reflector['success']);
+
+        $copy = $this->reflector->copySymbolTable();
+        static::assertInstanceOf(SymbolTable::class, $copy);
+        static::assertArrayHasKey('success',$copy);
     }
 
     public function testSymbolTypeMismatchError()
@@ -120,6 +125,12 @@ class LoaderReflectorTest extends \PHPUnit_Framework_TestCase
         // attempting to assign an double to a string.
         $this->expectException(SymbolTypeMismatchError::class);
         $this->reflector['test'] = 23.6;
+    }
+
+    public function testMissingMethod()
+    {
+        $this->expectException(MethodDoesNotExistException::class);
+        $this->reflector->invokeClassMethod(InvokeTestClass::class, 'missing_method');
     }
 
 }

@@ -15,10 +15,9 @@ class BladeConfigurator extends Configurator
      * Entry Method for configuration.
      *
      * @param ContainerBuilder $container
-     * @param array            $config
      */
     public function apply(ContainerBuilder $container)
     {
-        //
+    //
     }
 }
