@@ -29,6 +29,9 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
     /** @var ConfigurationSet */
     protected $PimpleSet;
 
+    /** @var ConfigFileReader $reader */
+    protected $reader;
+
     /** @var ConfigurationSet */
     protected $SymfonyDISet;
 
@@ -37,7 +40,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $reader = new ConfigFileReader(CONFIG);
+        $reader = $this->reader = new ConfigFileReader(CONFIG);
 
         $this->set = new ConfigurationSet('generic', $reader);
         $this->AurynSet = new ConfigurationSet('auryn', $reader, new Injector);
@@ -46,7 +49,12 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         $this->SymfonyDISet = new ConfigurationSet('symfony', $reader, new ContainerBuilder());
     }
 
-    public function test_configurator_set_priority()
+    public function testInstance()
+    {
+        static::assertSame($this->reader, $this->set->getConfig());
+    }
+
+    public function testConfiguratorSetPriority()
     {
         $this->set->insert(new \BladeConfigurator('views.blade.configurator',
             'view.blade', Priority::NORMAL, ['enabled' => FALSE]));
@@ -74,14 +82,14 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
             array_shift($configurators)['configurator']->getPriority());
     }
 
-    public function test_duplicate_add()
+    public function testDuplicateAdd()
     {
         $this->set->insert(new \BladeConfigurator('views.blade.configurator'));
         $this->expectException(DuplicateConfiguratorException::class);
         $this->set->insert(new \BladeConfigurator('views.blade.configurator'));
     }
 
-    public function test_get()
+    public function testGet()
     {
         $this->set->insert($blade = new \BladeConfigurator('views.blade.configurator'));
         $this->set->insert($mark = new \MarkdownConfigurator('views.markdown.configurator'));
@@ -93,7 +101,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         $this->set->get('not.a.configurator');
     }
 
-    public function test_loading()
+    public function testLoading()
     {
         $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG), NULL);
         $set->load([
@@ -121,11 +129,9 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
             // TwigConfigurator depends on the correct dataset parameter, so this should fail.
             new \TwigConfigurator('twig', 'views.twig.configurator'),
         ]);
-
-
     }
 
-    public function test_priority()
+    public function testPriority()
     {
         $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG));
         $set->insert(new \TestConfigurator('test.configurator'));
@@ -134,9 +140,11 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         $set->get('test.configurator')->setPriority('high');
     }
 
-    public function test_set()
+    public function testSet()
     {
         $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG));
+        static::assertEquals(NULL,$set->getContainer());
+
         $set->insert(new \TestConfigurator('test.configurator'));
         unset($set['test.configurator']);
         static::assertFalse($set->has('test.configurator'));

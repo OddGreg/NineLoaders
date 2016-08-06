@@ -154,6 +154,14 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
     }
 
     /**
+     * @return ConfigFileReader
+     */
+    public function getConfig(): ConfigFileReader
+    {
+        return $this->reader;
+    }
+
+    /**
      * Determine if a given configurator is registered.
      *
      * @param $key
@@ -309,12 +317,13 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
         if ( ! $this->configurators[$key]['configured']) {
 
             $injector = new LoaderReflector($this->buildSymbolTable($key, $class));
-            //expose([$key => $class, 'symbols' => $this->symbolTable, 'container' => $this->container]);
             $injector->invokeClassMethod(get_class($class), 'apply');
 
             // assuming that worked, handle accounting.
             $this->configurators[$key]['configured'] = TRUE;
             $this->configurators[$key]['profile']['loaded'] = microtime(TRUE);
+
+            unset($injector);
         }
     }
 
