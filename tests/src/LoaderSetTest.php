@@ -5,6 +5,7 @@
  * @version 0.5.0
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
+use Nine\Application\Containers\AurynDI;
 use Nine\Loaders\Support\LoaderReflector;
 use Nine\Loaders\Support\SymbolTable;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -30,8 +31,8 @@ class LoaderSetTest extends \PHPUnit_Framework_TestCase
     {
         $di = new ContainerBuilder();
         $this->symbols = new SymbolTable([
-            'container'             => SymbolTable::makeSymbol(ContainerBuilder::class, $di),
-            ContainerBuilder::class => SymbolTable::makeSymbol(ContainerBuilder::class, $di),
+            'container'             => SymbolTable::makeSymbol(AurynDI::class, $di),
+            ContainerBuilder::class => SymbolTable::makeSymbol(AurynDI::class, $di),
         ]);
 
         $this->reader = new ConfigFileReader(CONFIG . 'loaders/');
