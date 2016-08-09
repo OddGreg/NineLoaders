@@ -1,14 +1,10 @@
 <?php namespace Nine\Loaders;
 
-use Auryn\Injector;
-use Illuminate\Container\Container;
 use Nine\Loaders\Exceptions\ConfiguratorNotFoundException;
 use Nine\Loaders\Exceptions\DuplicateConfiguratorException;
 use Nine\Loaders\Exceptions\KeyDoesNotExistException;
 use Nine\Loaders\Exceptions\UnsupportedUseOfArrayAccessMethod;
 use Nine\Loaders\Support\Priority;
-use Pimple\Container as PimpleContainer;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Test the Collection Class
@@ -29,11 +25,11 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
     /** @var ConfigurationSet */
     protected $PimpleSet;
 
-    /** @var ConfigFileReader $reader */
-    protected $reader;
-
     /** @var ConfigurationSet */
     protected $SymfonyDISet;
+
+    /** @var ConfigFileReader $reader */
+    protected $reader;
 
     /** @var ConfigurationSet */
     private $set;
@@ -43,15 +39,10 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         $reader = $this->reader = new ConfigFileReader(CONFIG);
 
         $this->set = new ConfigurationSet('generic', $reader);
-        $this->AurynSet = new ConfigurationSet('auryn', $reader, new Injector);
-        $this->PimpleSet = new ConfigurationSet('pimple', $reader, new PimpleContainer);
-        $this->IlluminateSet = new ConfigurationSet('illuminate', $reader, new Container);
-        $this->SymfonyDISet = new ConfigurationSet('symfony', $reader, new ContainerBuilder());
-    }
-
-    public function testInstance()
-    {
-        static::assertSame($this->reader, $this->set->getConfig());
+        //$this->AurynSet = new ConfigurationSet('auryn', $reader, new Injector);
+        //$this->PimpleSet = new ConfigurationSet('pimple', $reader, new PimpleContainer);
+        //$this->IlluminateSet = new ConfigurationSet('illuminate', $reader, new Container);
+        //$this->SymfonyDISet = new ConfigurationSet('symfony', $reader, new ContainerBuilder());
     }
 
     public function testConfiguratorSetPriority()
@@ -101,6 +92,11 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
         $this->set->get('not.a.configurator');
     }
 
+    public function testInstance()
+    {
+        static::assertSame($this->reader, $this->set->getConfig());
+    }
+
     public function testLoading()
     {
         $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG), NULL);
@@ -120,7 +116,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
             // TwigConfigurator depends on the correct dataset parameter, so this should fail.
             new \TwigConfigurator('twig', 'view.twig'),
         ]);
-        static::assertArrayHasKey('defaults',$set['twig']->getSettings());
+        static::assertArrayHasKey('defaults', $set['twig']->getSettings());
 
         // failure test
         $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG), NULL);
@@ -143,7 +139,7 @@ class ConfigurationSetTest extends \PHPUnit_Framework_TestCase
     public function testSet()
     {
         $set = new ConfigurationSet('test', new ConfigFileReader(CONFIG));
-        static::assertEquals(NULL,$set->getContainer());
+        static::assertEquals(NULL, $set->getContainer());
 
         $set->insert(new \TestConfigurator('test.configurator'));
         unset($set['test.configurator']);

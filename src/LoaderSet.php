@@ -149,7 +149,7 @@ class LoaderSet implements Prioritizable, \ArrayAccess
     /**
      * @param SymbolTable $symbols
      */
-    public function setBaseSymbolTable(SymbolTable $symbols)
+    public function setSymbolTable(SymbolTable $symbols)
     {
         $this->symbolTable = $symbols;
     }

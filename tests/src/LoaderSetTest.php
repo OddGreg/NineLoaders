@@ -36,7 +36,7 @@ class LoaderSetTest extends \PHPUnit_Framework_TestCase
 
         $this->reader = new ConfigFileReader(CONFIG . 'loaders/');
         $this->loader = new LoaderSet('test.loader', new LoaderReflector($this->symbols), $di);
-        $this->loader->setBaseSymbolTable($this->symbols);
+        $this->loader->setSymbolTable($this->symbols);
         $this->loader->import($this->reader['container']);
     }
 
