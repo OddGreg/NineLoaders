@@ -6,7 +6,7 @@
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
 
-use Nine\Loaders\Configurators\Interfaces\ConfiguratorInterface;
+use Nine\Loaders\Interfaces\ConfiguratorInterface;
 use Nine\Loaders\Interfaces\Prioritizable;
 use Nine\Loaders\Support\Priority;
 use Nine\Loaders\Traits\WithImmutableGetSet;

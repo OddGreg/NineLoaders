@@ -1,4 +1,4 @@
-<?php namespace Nine\Loaders\Configurators\Interfaces;
+<?php namespace Nine\Loaders\Interfaces;
 
 use Nine\Loaders\ConfigFileReader;
 

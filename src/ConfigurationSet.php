@@ -112,7 +112,7 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
      * @param string $key        The configurator ID.
      * @param array  $parameters Optional parameters to pass to the configurator;
      *
-     * @return Configurator|\Nine\Loaders\Configurators\Interfaces\ConfiguratorInterface
+     * @return Configurator|\Nine\Loaders\Interfaces\ConfiguratorInterface
      * @throws ConfiguratorNotFoundException
      */
     public function get(string $key, array $parameters = []) : Configurator
@@ -177,7 +177,7 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
     /**
      * PrioritySet a configurator to a key.
      *
-     * @param \Nine\Loaders\Configurators\Interfaces\ConfiguratorInterface|Configurator $configurator
+     * @param \Nine\Loaders\Interfaces\ConfiguratorInterface|Configurator $configurator
      *
      * @return $this
      *
