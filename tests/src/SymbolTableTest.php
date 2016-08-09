@@ -22,8 +22,9 @@ class SymbolTableTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $container = new AurynDI();
-        $container->alias('symbol', SymbolForGet::class);
-        $container->share(new SymbolForGet('initialized'));
+        $container->define(SymbolForGet::class, [
+            'initialized'
+        ]);
 
         $this->st = new SymbolTable([
             'name'    => ['type' => 'string', 'value' => 'George'],

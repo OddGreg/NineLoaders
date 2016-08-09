@@ -9,6 +9,12 @@
             "email": "odd.greg@gmail.com"
         }
     ],
+    "repositories"     : [
+        {
+            "url" : "https://github.com/OddGreg/NineDI.git",
+            "type": "vcs"
+        }
+    ],
     "autoload"         : {
         "classmap"             : [
             "tests",
@@ -33,6 +39,7 @@
     },
     "prefer-stable"    : true,
     "require-dev"      : {
+        "oddgreg/nine-di"                : "dev-master",
         "phpunit/phpunit"                : "^5.1@dev",
         "psy/psysh"                      : "@stable",
         "tracy/tracy"                    : "^2.4@dev",
