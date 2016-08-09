@@ -6,6 +6,7 @@
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
 
+use Interop\Container\ContainerInterface;
 use Nine\Library\Lib;
 use Nine\Loaders\Exceptions\InvalidSymbolTableDefinitionException;
 use Nine\Loaders\Exceptions\KeyDoesNotExistException;
@@ -23,6 +24,9 @@ class SymbolTable implements \ArrayAccess, ItemQueryInterface
 {
     use WithItemArrayAccess;
     use WithItemQuery;
+
+    /** @var ContainerInterface */
+    protected $container;
 
     /**
      * Instantiate the SymbolTable and optionally import a given
@@ -154,6 +158,19 @@ class SymbolTable implements \ArrayAccess, ItemQueryInterface
     }
 
     /**
+     * Set a optional container for use with the table.
+     *
+     * The context of this container depends on the
+     * implementation of the application.
+     *
+     * @param ContainerInterface $container
+     */
+    public function setContainer(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
+
+    /**
      * @param string $key
      * @param string $type
      * @param mixed  $value
@@ -237,6 +254,16 @@ class SymbolTable implements \ArrayAccess, ItemQueryInterface
     protected function keyExists($key)
     {
         if ( ! array_key_exists($key, $this->items)) {
+
+            // try the container
+            if ($this->container instanceof ContainerInterface
+                //&& method_exists($this->container, 'has')
+                && $this->container->has($key)
+                //&& method_exists($this->container, 'get')
+            ) {
+                return $this->container->get($key);
+            }
+
             throw new KeyDoesNotExistException("Symbol '$key' does not exist.");
         }
 
