@@ -116,6 +116,10 @@ class SymbolTable implements \ArrayAccess, ItemQueryInterface
     {
         $this->keyExists($key);
 
+        if ($this->container && $this->container->has($key)) {
+            return $this->container->get($key);
+        }
+
         return $this->items[$key]['value'];
     }
 
@@ -151,6 +155,10 @@ class SymbolTable implements \ArrayAccess, ItemQueryInterface
     public function resolveSymbolValue($key)
     {
         $this->keyExists($key);
+
+        if ($this->container && $this->container->has($key)) {
+            return $this->container->get($key);
+        }
 
         return $this->items[$key]['type'] === \Closure::class
             ? $this->items[$key]['value']()

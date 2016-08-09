@@ -7,6 +7,7 @@
  */
 
 use ArrayAccess;
+use Interop\Container\ContainerInterface;
 use Nine\Loaders\Exceptions\ConfiguratorNotFoundException;
 use Nine\Loaders\Exceptions\DuplicateConfiguratorException;
 use Nine\Loaders\Interfaces\Prioritizable;
@@ -124,6 +125,14 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
     }
 
     /**
+     * @return ConfigFileReader
+     */
+    public function getConfig(): ConfigFileReader
+    {
+        return $this->reader;
+    }
+
+    /**
      * Return a copy of the internal configurators array.
      *
      * @return array
@@ -151,14 +160,6 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
     public function getKey(): string
     {
         return $this->key;
-    }
-
-    /**
-     * @return ConfigFileReader
-     */
-    public function getConfig(): ConfigFileReader
-    {
-        return $this->reader;
     }
 
     /**
@@ -378,6 +379,7 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
         $this->symbolTable->setSymbol('config', 'array', $this->reader->read($class->getDataset()));
         $this->symbolTable->setSymbol('name', 'string', $key);
         $this->symbolTable->setSymbol('dataset', 'string', $class->getDataset());
+        $this->container instanceof ContainerInterface ? $this->symbolTable->setContainer($this->container) : NULL;
 
         return $this->symbolTable;
     }
