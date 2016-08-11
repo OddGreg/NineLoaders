@@ -29,7 +29,6 @@
             "Nine\\Loaders\\": "src"
         }
     },
-    "minimum-stability": "dev",
     "require"          : {
         "php"                                : ">=7.0",
         "oddgreg/nine-library"               : "dev-master",
@@ -37,12 +36,13 @@
         "symfony/yaml"                       : "^3.1",
         "symfony/finder"                     : "^3.1"
     },
-    "prefer-stable"    : true,
     "require-dev"      : {
         "oddgreg/nine-di"             : "dev-master",
         "phpunit/phpunit"             : "^5.1@dev",
         "psy/psysh"                   : "@stable",
         "tracy/tracy"                 : "^2.4@dev",
         "symfony/dependency-injection": "3.1.*"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable"    : true
 }
