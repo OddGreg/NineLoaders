@@ -36,7 +36,7 @@
         "symfony/yaml"                       : "2.8.*|3.1.*",
         "symfony/finder"                     : "2.8.*|3.1.*"
     },
-    "require-dev"      : {
+    ".require-dev"      : {
         "oddgreg/nine-di"             : "dev-master",
         "phpunit/phpunit"             : "^5.1@dev",
         "psy/psysh"                   : "@stable",
