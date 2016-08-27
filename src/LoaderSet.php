@@ -1,4 +1,6 @@
-<?php namespace Nine\Loaders;
+<?php declare(strict_types = 1);
+
+namespace Nine\Loaders;
 
 /**
  * @package Nine Loader

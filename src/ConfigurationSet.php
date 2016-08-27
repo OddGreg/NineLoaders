@@ -1,4 +1,6 @@
-<?php namespace Nine\Loaders;
+<?php declare(strict_types = 1);
+
+namespace Nine\Loaders;
 
 /**
  * @package Nine Loader
@@ -88,7 +90,7 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
      * @throws Exceptions\InvalidConfigurationImportValueException
      * @throws ParseException
      */
-    public function configure()
+    public function configure() : ConfigurationSet
     {
         // priority order from HIGH to LOW
         foreach ($this->configurators as $key => &$entry) {
@@ -127,7 +129,7 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
     /**
      * @return ConfigFileReader
      */
-    public function getConfig(): ConfigFileReader
+    public function getConfig() : ConfigFileReader
     {
         return $this->reader;
     }
@@ -137,7 +139,7 @@ class ConfigurationSet implements ArrayAccess, Prioritizable, RepositoryInterfac
      *
      * @return array
      */
-    public function getConfigurators(): array
+    public function getConfigurators() : array
     {
         return array_merge($this->configurators, []);
     }

@@ -1,12 +1,15 @@
-<?php namespace Nine\Loaders\Interfaces;
+<?php declare(strict_types = 1);
 
-use Nine\Loaders\Configurator;
+namespace Nine\Loaders\Interfaces;
 
 /**
  * @package Nine Loader
  * @version 0.5.0
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
+
+use Nine\Loaders\Configurator;
+
 interface RepositoryInterface
 {
     /**

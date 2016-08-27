@@ -1,4 +1,6 @@
-<?php namespace Nine\Loaders\Interfaces;
+<?php declare(strict_types = 1);
+
+namespace Nine\Loaders\Interfaces;
 
 /**
  * @package Nine

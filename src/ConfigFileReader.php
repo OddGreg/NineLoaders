@@ -1,4 +1,6 @@
-<?php namespace Nine\Loaders;
+<?php declare(strict_types = 1);
+
+namespace Nine\Loaders;
 
 /**
  * @package Nine Loader
@@ -68,7 +70,7 @@ class ConfigFileReader implements \ArrayAccess, Countable
      *
      * @return bool
      */
-    public function cached($key)
+    public function cached($key) : bool
     {
         return Lib::array_has($this->cache, $key);
     }
@@ -87,7 +89,7 @@ class ConfigFileReader implements \ArrayAccess, Countable
      *
      * @return int
      */
-    public function count()
+    public function count() : int
     {
         return count($this->cache);
     }
@@ -97,7 +99,7 @@ class ConfigFileReader implements \ArrayAccess, Countable
      *
      * @return string
      */
-    public function getBasePath(): string
+    public function getBasePath() : string
     {
         return $this->basePath;
     }
@@ -110,7 +112,7 @@ class ConfigFileReader implements \ArrayAccess, Countable
      *
      * @return ConfigFileReader
      */
-    public function setBasePath(string $basePath): ConfigFileReader
+    public function setBasePath(string $basePath) : ConfigFileReader
     {
         $this->basePath = $basePath;
 
@@ -122,7 +124,7 @@ class ConfigFileReader implements \ArrayAccess, Countable
      *
      * @return array
      */
-    public function getCache(): array
+    public function getCache() : array
     {
         return $this->cache;
     }
@@ -162,14 +164,14 @@ class ConfigFileReader implements \ArrayAccess, Countable
      * @param string $directoryPath
      * @param string $mask
      *
-     * @return $this
+     * @return ConfigFileReader
      *
      * @throws InvalidConfigurationPathException
      * @throws InvalidArgumentException
      * @throws ParseException
      * @throws InvalidConfigurationImportValueException
      */
-    public function preloadPath(string $directoryPath = NULL, string $mask = '*.php')
+    public function preloadPath(string $directoryPath = NULL, string $mask = '*.php') : ConfigFileReader
     {
         // if NULL is passed then assume the basePath.
         $directoryPath = $directoryPath ?: $this->basePath;
@@ -273,7 +275,7 @@ class ConfigFileReader implements \ArrayAccess, Countable
 
         $path = $this->basePath . $filePathOrKey;
 
-        if (!file_exists($path)) {
+        if ( ! file_exists($path)) {
             if (FALSE === ($path = Lib::file_in_path($filename, [pathinfo($filePathOrKey, PATHINFO_DIRNAME), $this->basePath]))) {
                 throw new InvalidConfigurationPathException("Could not locate the provided file path. (path: $path)");
             }
@@ -296,7 +298,7 @@ class ConfigFileReader implements \ArrayAccess, Countable
      * @throws \Nine\Loaders\Exceptions\InvalidConfigurationImportValueException
      * @throws \Symfony\Component\Yaml\Exception\ParseException
      */
-    public function readMany(array $keys)
+    public function readMany(array $keys) : array
     {
         $collection = [];
 

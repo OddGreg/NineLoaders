@@ -1,4 +1,6 @@
-<?php namespace Nine\Loaders;
+<?php declare(strict_types = 1);
+
+namespace Nine\Loaders;
 
 /**
  * @package Nine Loader
@@ -63,7 +65,7 @@ class ConfigFileWriter implements \ArrayAccess
     /**
      * @return array
      */
-    public function getCache()
+    public function getCache() : array
     {
         return $this->cache;
     }

@@ -93,7 +93,7 @@ final class LoaderReflector extends SymbolTable
     public function invokeClassMethod(string $class, $method = NULL)
     {
         // is the class described by `class@method`?
-        if (is_string($class) and Lib::str_has(':', $class)) {
+        if (is_string($class) && Lib::str_has(':', $class)) {
             list($class, $method) = explode(':', $class);
         }
 

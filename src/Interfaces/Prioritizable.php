@@ -1,11 +1,12 @@
-<?php
+<?php declare(strict_types = 1);
+
+namespace Nine\Loaders\Interfaces;
 
 /**
  * @package Nine Loader
  * @version 0.5.0
  * @author  Greg Truesdell <odd.greg@gmail.com>
  */
-namespace Nine\Loaders\Interfaces;
 
 use Nine\Loaders\ConfigFileReader;
 
